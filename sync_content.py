@@ -25,8 +25,14 @@ CDN links let previously skipped videos transcribe); status / transcript /
 ai_breakdown are never in the payload, so worked rows are never clobbered.
 engagement_rate and viral_score are generated columns — never written.
 
-Env (required): TRACKER ("IG" or "AI"), APIFY_TOKEN, SUPABASE_URL,
+Env (required): TRACKER ("IG", "FB" or "AI"), APIFY_TOKEN, SUPABASE_URL,
                 SUPABASE_SERVICE_ROLE_KEY
+
+Facebook (TRACKER=FB): competitors are public Facebook *pages*. In the
+competitors table put the page slug (facebook.com/<slug>) or the full page URL.
+Uses apify/facebook-pages-scraper (followers) + apify/facebook-posts-scraper
+(posts). Facebook engagement rates are far lower than Instagram's, so the
+default MIN_ER / MIN_COMMENTS / MIN_ENGAGE are lower when TRACKER=FB.
 Env (tuning, all optional -- set as GitHub Actions *Variables*):
      MIN_ER (0.02)  MIN_COMMENTS (15)  MIN_ENGAGE (20)  OUTLIER_X (1.5)
      TOP_N_PER_COMP (3)  MAX_PER_COMP (15)  DAYS_BACK (60)
@@ -35,6 +41,7 @@ Env (tuning, all optional -- set as GitHub Actions *Variables*):
 
 import json
 import os
+import re
 import statistics
 import sys
 import time
@@ -66,9 +73,12 @@ def _envi(name, default):
 
 
 # --- tuning knobs (GitHub Actions Variables; defaults are the loose set) ---
-MIN_ER         = _envf("MIN_ER", 0.02)        # 2% engagement rate
-MIN_COMMENTS   = _envi("MIN_COMMENTS", 15)    # absolute comment count
-MIN_ENGAGE     = _envi("MIN_ENGAGE", 20)      # noise floor: likes+comments
+IS_FB = TRACKER == "FB"
+# Facebook pages get far less engagement per follower than Instagram, so the
+# FB defaults are lower. Same variable names; override in Actions Variables.
+MIN_ER         = _envf("MIN_ER", 0.005 if IS_FB else 0.02)    # IG 2% / FB 0.5%
+MIN_COMMENTS   = _envi("MIN_COMMENTS", 5 if IS_FB else 15)    # absolute comment count
+MIN_ENGAGE     = _envi("MIN_ENGAGE", 10 if IS_FB else 20)     # noise floor: likes+comments
 OUTLIER_X      = _envf("OUTLIER_X", 1.5)      # x the account's own median
 TOP_N_PER_COMP = _envi("TOP_N_PER_COMP", 3)   # always keep each account's best N
 MAX_PER_COMP   = _envi("MAX_PER_COMP", 15)    # cap per account, so one big
@@ -116,11 +126,37 @@ def sb(path, method="GET", data=None, prefer=None):
 # ---------------------------------------------------------------------------
 
 
+FB_NON_PAGE = ("posts", "photo", "photos", "videos", "reel", "reels", "watch",
+               "groups", "events", "share", "permalink.php", "story.php",
+               "profile.php", "hashtag")
+
+
+def fb_slug(value):
+    """'facebook.com/Foo/posts/1', 'https://www.facebook.com/Foo/', '@Foo'
+    -> 'foo'. Returns '' for links that are not a page (post, group, profile.php)."""
+    n = (value or "").strip()
+    if "facebook.com" in n or "fb.com" in n:
+        if "//" not in n:
+            n = "https://" + n
+        parts = [p for p in urllib.parse.urlparse(n).path.split("/") if p]
+        if not parts or parts[0].lower() in FB_NON_PAGE:
+            return ""
+        n = parts[0]
+    return n.lstrip("@").strip().lower()
+
+
 def fetch_competitors():
     rows = sb(f"competitors?select=username&tracker=eq.{TRACKER}&active=is.true")
     names = []
     for r in rows:
         n = (r.get("username") or "").strip()
+        if IS_FB:
+            slug = fb_slug(n)
+            if not slug:
+                print(f"  WARNING: skipping non-page Facebook link: {n[:60]}")
+                continue
+            names.append(slug)
+            continue
         if "instagram.com" in n:
             parts = [p for p in urllib.parse.urlparse(n).path.split("/") if p]
             if not parts or parts[0] in ("p", "reel", "reels", "stories", "tv"):
@@ -218,42 +254,109 @@ def post_type(p):
                  "Video" if p.get("isVideo") else "Image")
 
 
+def parse_ig(p, followers_map, today):
+    """One Instagram post -> (account, row). Returns (None, None) if unusable,
+    (account, None) when the follower count is missing."""
+    if p.get("error") or not p.get("shortCode"):
+        return None, None
+    u = (p.get("ownerUsername") or (p.get("owner") or {}).get("username") or "")
+    u = u.lower().strip()
+    fol = followers_map.get(u, 0)
+    if not fol:
+        return u, None
+    likes = int(p.get("likesCount") or p.get("likes") or 0)
+    comments = int(p.get("commentsCount") or p.get("comments") or 0)
+    pt = post_type(p)
+    tags = p.get("hashtags") or []
+    return u, {
+        "post_id": p["shortCode"],
+        "tracker": TRACKER,
+        "competitor": u,
+        "caption": (p.get("caption") or "")[:5000],
+        "post_type": pt,
+        "likes": likes,
+        "comments": comments,
+        "followers": fol,
+        "post_date": parse_date(p.get("timestamp")),
+        "post_url": f"https://www.instagram.com/p/{p['shortCode']}/",
+        "thumbnail_url": p.get("displayUrl") or p.get("imageUrl") or None,
+        "video_url": p.get("videoUrl") or None,
+        "hashtags": ", ".join(tags) if isinstance(tags, list) else str(tags),
+        "is_video": bool(p.get("isVideo") or pt in ("Video", "Reel")),
+        "last_synced": today,
+    }
+
+
+def parse_fb(p, followers_map, today):
+    """One Facebook post (apify/facebook-posts-scraper) -> (page, row).
+
+    Facebook's `likes` is the total reaction count, so it maps onto the same
+    likes column the dashboard already uses. Shares and views are not stored
+    (no columns), so they do not affect the score. post_id gets an `fb_` prefix
+    so it can never collide with an Instagram shortcode. video_url stays empty:
+    Facebook video links expire and are not reliably downloadable, so Whisper
+    transcription skips Facebook posts."""
+    if p.get("error") or not p.get("postId"):
+        return None, None
+    u = (fb_slug(p.get("inputUrl") or "") or fb_slug(p.get("facebookUrl") or "")
+         or (p.get("pageName") or "").lower().strip())
+    if not u:
+        return None, None
+    fol = followers_map.get(u, 0)
+    if not fol:
+        return u, None
+    likes = int(p.get("likes") or 0)
+    comments = int(p.get("comments") or 0)
+    media = p.get("media") or []
+    first = media[0] if media and isinstance(media[0], dict) else {}
+    url = p.get("url") or p.get("topLevelUrl") or ""
+    is_video = bool(p.get("viewsCount")
+                    or str(first.get("__typename") or "").lower() == "video"
+                    or any(k in url for k in ("/reel/", "/videos/", "/watch")))
+    if is_video:
+        pt = "Reel" if "/reel/" in url else "Video"
+    elif len(media) > 1:
+        pt = "Carousel"
+    else:
+        pt = "Image"
+    text = p.get("text") or ""
+    tags = [t.lstrip("#") for t in re.findall(r"#\w+", text)]
+    thumb = first.get("thumbnail") or (first.get("photo_image") or {}).get("uri")
+    return u, {
+        "post_id": "fb_" + str(p["postId"]),
+        "tracker": TRACKER,
+        "competitor": u,
+        "caption": text[:5000],
+        "post_type": pt,
+        "likes": likes,
+        "comments": comments,
+        "followers": fol,
+        "post_date": parse_date(p.get("time") if p.get("time") else p.get("timestamp")),
+        "post_url": url or None,
+        "thumbnail_url": thumb or None,
+        "video_url": None,
+        "hashtags": ", ".join(tags),
+        "is_video": is_video,
+        "last_synced": today,
+    }
+
+
 def to_rows(posts, followers_map, today):
     """Group the scrape by account, judge each account against ITSELF, and
     guarantee every account contributes its best few posts."""
+    parse = parse_fb if IS_FB else parse_ig
     by_comp, nofol, broken = {}, 0, 0
     for p in posts:
-        if p.get("error") or not p.get("shortCode"):
+        u, row = parse(p, followers_map, today)
+        if u is None:
             broken += 1
             continue
-        u = (p.get("ownerUsername") or (p.get("owner") or {}).get("username") or "")
-        u = u.lower().strip()
-        fol = followers_map.get(u, 0)
-        if not fol:
+        if row is None:
             nofol += 1
             continue
-        likes = int(p.get("likesCount") or p.get("likes") or 0)
-        comments = int(p.get("commentsCount") or p.get("comments") or 0)
-        pt = post_type(p)
-        tags = p.get("hashtags") or []
+        fol, likes, comments = row["followers"], row["likes"], row["comments"]
         by_comp.setdefault(u, []).append({
-            "row": {
-                "post_id": p["shortCode"],
-                "tracker": TRACKER,
-                "competitor": u,
-                "caption": (p.get("caption") or "")[:5000],
-                "post_type": pt,
-                "likes": likes,
-                "comments": comments,
-                "followers": fol,
-                "post_date": parse_date(p.get("timestamp")),
-                "post_url": f"https://www.instagram.com/p/{p['shortCode']}/",
-                "thumbnail_url": p.get("displayUrl") or p.get("imageUrl") or None,
-                "video_url": p.get("videoUrl") or None,
-                "hashtags": ", ".join(tags) if isinstance(tags, list) else str(tags),
-                "is_video": bool(p.get("isVideo") or pt in ("Video", "Reel")),
-                "last_synced": today,
-            },
+            "row": row,
             "eng": likes + comments,
             "er": (likes + comments) / fol,
             "comments": comments,
@@ -355,24 +458,42 @@ def main():
           f"engagements>={OUTLIER_X}x own median | floor {MIN_ENGAGE} | "
           f"keep {TOP_N_PER_COMP}-{MAX_PER_COMP} per account")
 
-    profiles = run_actor(token, "apify~instagram-profile-scraper",
-                         {"usernames": names}, "Step 1 profiles")
-    followers = {}
-    for pr in profiles:
-        u = (pr.get("username") or "").lower().strip()
-        c = pr.get("followersCount") or pr.get("followers") or 0
-        if u and c:
-            followers[u] = int(c)
-    print(f"  followers for {len(followers)}/{len(names)}")
+    if IS_FB:
+        page_urls = [{"url": f"https://www.facebook.com/{n}"} for n in names]
+        profiles = run_actor(token, "apify~facebook-pages-scraper",
+                             {"startUrls": page_urls}, "Step 1 pages")
+        followers = {}
+        for pr in profiles:
+            c = pr.get("followers") or pr.get("likes") or 0   # followers, else page likes
+            if not c:
+                continue
+            for key in (fb_slug(pr.get("facebookUrl") or ""), fb_slug(pr.get("pageUrl") or ""),
+                        fb_slug(pr.get("inputUrl") or ""), (pr.get("pageName") or "").lower().strip()):
+                if key:
+                    followers[key] = int(c)
+        print(f"  followers for {sum(1 for n in names if n in followers)}/{len(names)}")
+        posts = run_actor(token, "apify~facebook-posts-scraper",
+                          {"startUrls": page_urls, "resultsLimit": RESULTS_LIMIT,
+                           "onlyPostsNewerThan": f"{DAYS_BACK} days"}, "Step 2 posts")
+    else:
+        profiles = run_actor(token, "apify~instagram-profile-scraper",
+                             {"usernames": names}, "Step 1 profiles")
+        followers = {}
+        for pr in profiles:
+            u = (pr.get("username") or "").lower().strip()
+            c = pr.get("followersCount") or pr.get("followers") or 0
+            if u and c:
+                followers[u] = int(c)
+        print(f"  followers for {len(followers)}/{len(names)}")
 
-    try:
-        suggest_competitors(profiles)
-    except Exception as exc:
-        print(f"[Suggest] skipped ({exc})")
+        try:
+            suggest_competitors(profiles)
+        except Exception as exc:
+            print(f"[Suggest] skipped ({exc})")
 
-    posts = run_actor(token, "apify~instagram-post-scraper",
-                      {"username": names, "resultsLimit": RESULTS_LIMIT,
-                       "onlyPostsNewerThan": f"{DAYS_BACK} days"}, "Step 2 posts")
+        posts = run_actor(token, "apify~instagram-post-scraper",
+                          {"username": names, "resultsLimit": RESULTS_LIMIT,
+                           "onlyPostsNewerThan": f"{DAYS_BACK} days"}, "Step 2 posts")
     print(f"  scraped {len(posts)} posts (last {DAYS_BACK} days, "
           f"<= {RESULTS_LIMIT}/account)")
 

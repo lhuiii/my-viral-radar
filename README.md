@@ -145,6 +145,21 @@ Supabase 左下角 **Settings → API Keys**,复制三样(先放记事本):
 > 💡 用的是第 4 步那把免费的 `GEMINI_API_KEY`;有 Claude key 的加 `ANTHROPIC_API_KEY` 会优先用 Claude,稿子更像人话。
 > 💡 `NICHE` 变量决定 AI 拆解的方向,`brand_voice.md` 决定「我的稿」的语气,两个都设了效果最好。
 
+## 📘 同时追踪 Facebook 主页
+
+除了 IG,系统也能抓**公开 Facebook 主页**的帖子,和 IG 放在同一个看板里(顶部「全部 Tracker」下拉可以只看 IG 或只看 FB)。
+
+1. Supabase → SQL Editor,跑 `加竞对.sql` 里 Facebook 那一段(`tracker` 填 `FB`,`username` 填主页名,例如 `facebook.com/deluxmalaysia` 就填 `deluxmalaysia`)
+2. Actions → **Sync Content** → Run workflow。它会先抓 IG,再抓 FB;FB 失败不会影响 IG 继续往下跑
+3. 不用新增任何钥匙,沿用 `APIFY_TOKEN`
+
+FB 和 IG 的差别:
+- 只能追踪**公开主页**,不能追个人账号、群组
+- FB 的「赞」是全部表情反应总数;互动率普遍比 IG 低,所以 FB 默认门槛更低(互动率 0.5%、评论 5 条)
+- 分享数和播放数目前不入库,不影响分数
+- FB 视频没有自动转录(口播栏会是空的),AI 拆解和「我的稿」只依据帖子文案
+- Apify 官方 Facebook 抓取按条计费(官方页面写约 US$5/1000 条,加日期筛选另加),建议先只加 2-3 个主页看用量
+
 ## 卡住了
 
 | 现象 | 怎么办 |

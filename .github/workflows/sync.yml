@@ -21,3 +21,13 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: python sync_content.py
+      # Facebook runs after Instagram. continue-on-error: a Facebook/Apify hiccup
+      # must not stop the Instagram data from flowing on to transcribe -> analyze -> deploy.
+      - name: Sync Facebook pages
+        continue-on-error: true
+        env:
+          TRACKER: FB
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python sync_content.py

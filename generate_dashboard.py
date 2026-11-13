@@ -27,7 +27,7 @@ SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")  # public key, baked
 # Falls back to sensible defaults so the page still builds before they're set.
 BRAND = os.environ.get("BRAND") or "爆款雷达"
 SYNC_DAY = os.environ.get("SYNC_DAY") or "每周"
-TRACKER_LABEL = {"IG": BRAND + " 竞对"}
+TRACKER_LABEL = {"IG": BRAND + " · Instagram", "FB": BRAND + " · Facebook"}
 STATUSES = ["未处理", "拍摄中", "已处理", "跳过"]
 
 # comment-bait CTA patterns — require an explicit gated keyword:
@@ -72,6 +72,16 @@ def _handle(name):
         if not parts or parts[0] in ("p", "reel", "reels", "stories", "tv"):
             return ""
         n = parts[0]
+    elif "facebook.com" in n or "fb.com" in n:
+        if "//" not in n:
+            n = "https://" + n
+        parts = [p for p in urllib.parse.urlparse(n).path.split("/") if p]
+        if not parts or parts[0].lower() in ("posts", "photo", "photos", "videos", "reel",
+                                             "reels", "watch", "groups", "events", "share",
+                                             "permalink.php", "story.php", "profile.php",
+                                             "hashtag"):
+            return ""
+        n = parts[0]
     return n.lstrip("@").strip().lower()
 
 
@@ -110,6 +120,7 @@ def normalize(r):
     return {
         "id": post_id,
         "tracker": TRACKER_LABEL.get(r.get("tracker"), r.get("tracker") or "AI Competitors"),
+        "platform": "FB" if r.get("tracker") == "FB" else "IG",
         "competitor": r.get("competitor") or "",
         "caption": caption,
         "transcript": tr if tr not in ("(转录失败)", "(视频不可用)", "(无口播内容)") else "",
@@ -390,7 +401,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <div class="empty" id="empty" style="display:none"><svg class="ic"><use href="#i-search"/></svg>没有符合条件的帖子</div>
   <div class="more" id="moreWrap" style="display:none"><button id="moreBtn">载入更多</button></div>
 </main>
-<footer>数据来源 Supabase · __SYNC_DAY__自动更新 · 状态更改即时同步全团队 · 视频由 Instagram 官方 embed 播放</footer>
+<footer>数据来源 Supabase · __SYNC_DAY__自动更新 · 状态更改即时同步全团队 · 视频由 Instagram / Facebook 官方 embed 播放</footer>
 <div id="toast"></div>
 <script id="data" type="application/json">__DATA__</script>
 <script>
@@ -410,6 +421,10 @@ const getKey = () => ANON;  // anon key is baked in — safe, can only change st
 const I = n => '<svg class="ic"><use href="#i-' + n + '"/></svg>';
 const esc = s => String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const byRec = {}; DATA.forEach(d => byRec[d.id] = d);
+const profileUrl = d => d.platform === 'FB' ? 'https://www.facebook.com/' + d.competitor + '/' : 'https://www.instagram.com/' + d.competitor + '/';
+const embedSrc = d => d.platform === 'FB'
+  ? 'https://www.facebook.com/plugins/' + (d.video ? 'video' : 'post') + '.php?href=' + encodeURIComponent(d.url) + '&show_text=false&width=500'
+  : 'https://www.instagram.com/p/' + d.id + '/embed/';
 const TRENDS = __TRENDS__;
 DATA.forEach(d => {
   d.days = d.date ? Math.max(0, Math.floor((Date.now() - new Date(d.date + 'T00:00:00')) / 864e5)) : null;
@@ -485,7 +500,7 @@ const io = new IntersectionObserver(entries => {
       const el = e.target, pid = el.dataset.pid;
       if (!el.querySelector('iframe')) {
         const f = document.createElement('iframe');
-        f.src = 'https://www.instagram.com/p/' + pid + '/embed/';
+        f.src = embedSrc(byRec[pid]);
         f.loading = 'lazy'; f.allow = 'autoplay; encrypted-media';
         el.appendChild(f);
       }
@@ -538,7 +553,8 @@ function card(d, idx) {
     <div class="meta">
       <div class="row1">
         <span class="handle" title="拖到上方 tab 即可归类">${I('grip')}</span>
-        <a class="who" href="https://www.instagram.com/${d.competitor}/" target="_blank">@${d.competitor}</a>
+        <a class="who" href="${profileUrl(d)}" target="_blank">@${d.competitor}</a>
+        <span class="badge">${d.platform === 'FB' ? 'FB' : 'IG'}</span>
         <span class="badge">${d.type || '-'}</span>
         ${days !== null && days <= 7 ? '<span class="badge bnew">' + I('star') + '新帖</span>' : ''}
         ${horse ? '<span class="badge bhorse">' + I('zap') + '黑马</span>' : ''}
@@ -561,7 +577,7 @@ function card(d, idx) {
         ${tr ? '<button class="abtn mic" title="复制视频口播逐字稿">' + I('mic') + '口播</button>' : ''}
         ${d.my ? '<button class="abtn minec" title="复制我的改写口播稿(可直接拍)">' + I('mic') + '我的稿</button>' : ''}
         <button class="abtn brief" title="复制拍摄 Brief(数据+Hook+AI拆解+我的稿+口播稿+文案)">${I('clip')}Brief</button>
-        <a class="abtn" href="${d.url}" target="_blank" title="打开 Instagram 原帖">${I('ext')}</a></div>
+        <a class="abtn" href="${d.url}" target="_blank" title="打开原帖">${I('ext')}</a></div>
     </div>`;
   const capEl = el.querySelector('.cap');
   const restTxt = lines.slice(1).join('\\n');
@@ -948,6 +964,7 @@ const fmt = n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(
 const getKey = () => ANON;  // anon key is baked in — safe, can only change status
 const firstLine = c => ((c || '').split('\\n').map(l => l.trim()).filter(Boolean)[0] || '(无文案)');
 const byRec = {}; DATA.forEach(d => byRec[d.id] = d);
+const profileUrl = d => d.platform === 'FB' ? 'https://www.facebook.com/' + d.competitor + '/' : 'https://www.instagram.com/' + d.competitor + '/';
 
 function toast(msg, ok) {
   const t = $('toast'); t.textContent = msg; t.classList.add('show');
@@ -1054,7 +1071,7 @@ function renderWork() {
   if (!shoot.length) sl.innerHTML = '<div class="none">队列是空的 — Marketer 去爆款雷达挑几条拖进「拍摄中」</div>';
   shoot.forEach(d => {
     const r = document.createElement('div'); r.className = 'row';
-    r.innerHTML = '<a class="who2" href="https://www.instagram.com/' + d.competitor + '/" target="_blank">@' + esc(d.competitor) + '</a>'
+    r.innerHTML = '<a class="who2" href="' + profileUrl(d) + '" target="_blank">@' + esc(d.competitor) + '</a>'
       + ((d.x || 0) >= 2 ? '<span class="xb">×' + d.x + '</span>' : '')
       + '<span class="hookline">' + esc(firstLine(d.caption)) + '</span>'
       + '<a class="pill" href="' + d.url + '" target="_blank">' + I('ext') + '原帖</a>'
@@ -1072,7 +1089,7 @@ function renderWork() {
   picks.forEach(d => {
     const r = document.createElement('div'); r.className = 'row';
     r.innerHTML = '<span class="xb">×' + d.x + '</span>'
-      + '<a class="who2" href="https://www.instagram.com/' + d.competitor + '/" target="_blank">@' + esc(d.competitor) + '</a>'
+      + '<a class="who2" href="' + profileUrl(d) + '" target="_blank">@' + esc(d.competitor) + '</a>'
       + '<span class="hookline">' + esc(firstLine(d.caption))
       + '<small>🔥' + d.score + ' · ER ' + d.er + '% · 💬' + fmt(d.comments) + '</small></span>'
       + '<a class="pill" href="' + d.url + '" target="_blank">' + I('ext') + '原帖</a>'
@@ -1172,11 +1189,12 @@ def main():
 
     # outlier multiplier: post score vs the account's own median score
     import statistics
+    # keyed by (platform, account): the same name on IG and FB is two baselines
     by_comp = {}
     for p in unique:
-        by_comp.setdefault(p["competitor"], []).append(p["score"] or 0)
+        by_comp.setdefault((p["platform"], p["competitor"]), []).append(p["score"] or 0)
     for p in unique:
-        scores = [s for s in by_comp[p["competitor"]] if s > 0]
+        scores = [s for s in by_comp[(p["platform"], p["competitor"])] if s > 0]
         med = statistics.median(scores) if len(scores) >= 3 else 0
         p["x"] = round((p["score"] or 0) / med, 1) if med > 0 else 0
 
