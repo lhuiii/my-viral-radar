@@ -7,6 +7,11 @@ on:
   schedule:
     # 兜底:万一上游链条断了,每周一 16:00 大马时间(UTC 08:00)也重建一次
     - cron: "0 8 * * 1"
+  # 页面代码(generate_dashboard.py)一更新就自动重新生成网页,不用再手动点 Run workflow。
+  # 机器人自己提交的 docs/ 不在这个路径里,不会循环触发。
+  push:
+    branches: [main]
+    paths: ["generate_dashboard.py"]
   workflow_dispatch:
 
 permissions:
