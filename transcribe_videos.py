@@ -78,6 +78,10 @@ def main():
         print("ERROR: SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY required")
         sys.exit(1)
 
+    if "--count" in sys.argv:       # used by the workflow to skip the heavy install
+        print(len(fetch_pending()))
+        return
+
     queue = fetch_pending()
     print(f"{len(queue)} videos pending transcription")
     if not queue:

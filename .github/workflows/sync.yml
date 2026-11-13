@@ -5,10 +5,34 @@ on:
     # 默认:每周一 11:00 大马时间(UTC 03:00)。想改时间就编辑这一行的 cron。
     - cron: "0 3 * * 1"
   workflow_dispatch:
+    inputs:
+      only_new:
+        description: "只抓新加的账号(数据库里还没有帖子的)。网页「管理竞对」添加账号时会自动用这个。"
+        required: false
+        default: "false"
+
+# 同一时间只跑一次抓取。连续加几个账号时,后面的排队,等前面的抓完再看有没有新的。
+concurrency:
+  group: sync-content
+  cancel-in-progress: false
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+    # README 里说可以在 Settings → Variables 调这些阈值,这里把它们真正传给脚本。
+    # 没设置的变量是空字符串,脚本会自动用默认值。
+    env:
+      MIN_ER: ${{ vars.MIN_ER }}
+      MIN_COMMENTS: ${{ vars.MIN_COMMENTS }}
+      MIN_ENGAGE: ${{ vars.MIN_ENGAGE }}
+      OUTLIER_X: ${{ vars.OUTLIER_X }}
+      TOP_N_PER_COMP: ${{ vars.TOP_N_PER_COMP }}
+      MAX_PER_COMP: ${{ vars.MAX_PER_COMP }}
+      DAYS_BACK: ${{ vars.DAYS_BACK }}
+      RESULTS_LIMIT: ${{ vars.RESULTS_LIMIT }}
+      REFRESH_DAYS: ${{ vars.REFRESH_DAYS }}
+      REFRESH_LIMIT: ${{ vars.REFRESH_LIMIT }}
+      MAX_ROWS: ${{ vars.MAX_ROWS }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -17,6 +41,7 @@ jobs:
       - name: Sync competitors
         env:
           TRACKER: IG
+          ONLY_NEW: ${{ inputs.only_new }}
           APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -27,6 +52,7 @@ jobs:
         continue-on-error: true
         env:
           TRACKER: FB
+          ONLY_NEW: ${{ inputs.only_new }}
           APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

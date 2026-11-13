@@ -6,26 +6,43 @@ on:
     types: [completed]
   workflow_dispatch:
 
+# 同一时间只转录一次:连续加几个账号时,不会两个运行同时处理同一批视频
+concurrency:
+  group: transcribe
+  cancel-in-progress: false
+
 jobs:
   transcribe:
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # 先数一下有多少视频要转录。没有(例如只加了 Facebook 页面,或没有新视频)就跳过
+      # 下面又大又慢的 ffmpeg + Whisper 安装,后面的 AI 拆解和更新网页就能更快开始。
+      # 数不出来(出错)时 n 为空,会照常往下跑。
+      - name: Count pending videos
+        id: q
+        continue-on-error: true
+        run: echo "n=$(python transcribe_videos.py --count)" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v4
+        if: steps.q.outputs.n != '0'
         with:
           path: ~/.cache/whisper
           key: whisper-small
       - name: Install dependencies
+        if: steps.q.outputs.n != '0'
         run: |
           sudo apt-get update -qq || true
           sudo apt-get install -y ffmpeg
           pip -q install openai-whisper
+      # 转录失败不该挡住后面的 AI 拆解和更新网页(拆解会改用文案),所以失败也算这一步通过
       - name: Transcribe
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        if: steps.q.outputs.n != '0'
+        continue-on-error: true
         run: python transcribe_videos.py

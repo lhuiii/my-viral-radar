@@ -74,6 +74,10 @@ def _envi(name, default):
 
 # --- tuning knobs (GitHub Actions Variables; defaults are the loose set) ---
 IS_FB = TRACKER == "FB"
+# ONLY_NEW=1: scrape only accounts that have no posts in the database yet (the
+# ones just added from the dashboard). Everything already tracked is left alone,
+# so no Apify money is spent re-fetching it. The weekly run leaves this unset.
+ONLY_NEW = (os.environ.get("ONLY_NEW") or "").strip().lower() in ("1", "true", "yes")
 # Facebook pages get far less engagement per follower than Instagram, so the
 # FB defaults are lower. Same variable names; override in Actions Variables.
 MIN_ER         = _envf("MIN_ER", 0.005 if IS_FB else 0.02)    # IG 2% / FB 0.5%
@@ -84,7 +88,9 @@ TOP_N_PER_COMP = _envi("TOP_N_PER_COMP", 3)   # always keep each account's best 
 MAX_PER_COMP   = _envi("MAX_PER_COMP", 15)    # cap per account, so one big
                                               # account cannot flood the board
 DAYS_BACK      = _envi("DAYS_BACK", 60)       # lookback window (free volume)
-RESULTS_LIMIT  = _envi("RESULTS_LIMIT", 50)   # posts scraped per account (costs $)
+RESULTS_LIMIT  = _envi("RESULTS_LIMIT", 50)   # posts scraped per NEW account (costs $)
+REFRESH_DAYS   = _envi("REFRESH_DAYS", 21)    # accounts we already have: only look back this far
+REFRESH_LIMIT  = _envi("REFRESH_LIMIT", 25)   # ...and scrape at most this many posts (costs $)
 MAX_ROWS       = _envi("MAX_ROWS", 2500)      # dashboard payload cap
 
 
@@ -145,11 +151,16 @@ def fb_slug(value):
     return n.lstrip("@").strip().lower()
 
 
+COMP_INFO = {}   # lower-cased account name -> {"id":..., "notes":...}, filled by fetch_competitors
+
+
 def fetch_competitors():
-    rows = sb(f"competitors?select=username&tracker=eq.{TRACKER}&active=is.true")
+    rows = sb(f"competitors?select=id,username,notes&tracker=eq.{TRACKER}&active=is.true")
     names = []
     for r in rows:
         n = (r.get("username") or "").strip()
+        COMP_INFO[(fb_slug(n) if IS_FB else n.lstrip("@").strip()).lower()] = {
+            "id": r.get("id"), "notes": r.get("notes") or ""}
         if IS_FB:
             slug = fb_slug(n)
             if not slug:
@@ -442,6 +453,55 @@ def cleanup():
 # ---------------------------------------------------------------------------
 
 
+def has_posts(name):
+    """True when this account already has at least one post stored."""
+    rows = sb(f"posts?select=post_id&tracker=eq.{TRACKER}"
+              f"&competitor=eq.{urllib.parse.quote(name.lower())}&limit=1")
+    return bool(rows)
+
+
+FAIL_NOTE = "抓取失败"
+
+
+def report_results(names, followers, rows, today):
+    """Write what happened to each account into competitors.notes, so the
+    dashboard's 管理竞对 list shows it (typo / private page / no recent posts)
+    instead of the account silently producing nothing."""
+    counts = {}
+    for r in rows:
+        counts[r["competitor"]] = counts.get(r["competitor"], 0) + 1
+    for n in names:
+        key = n.lower()
+        info = COMP_INFO.get(key)
+        if not info or info.get("id") is None:
+            continue
+        if not followers.get(key):
+            note = f"{FAIL_NOTE} {today}:找不到这个账号/页面(名字拼错,或不是公开主页)"
+        elif counts.get(key):
+            note = f"上次抓取 {today}:{counts[key]} 条"
+        else:
+            note = f"上次抓取 {today}:最近没有可显示的帖子"
+        if note == info.get("notes"):
+            continue
+        try:
+            sb(f"competitors?id=eq.{info['id']}", method="PATCH",
+               data={"notes": note}, prefer="return=minimal")
+        except Exception as exc:
+            print(f"  (could not save note for {n}: {exc})")
+
+
+def scrape_posts(token, group, limit, days):
+    """One Apify posts run for a group of accounts with its own window/limit."""
+    if not group:
+        return []
+    if IS_FB:
+        inp = {"startUrls": [{"url": f"https://www.facebook.com/{n}"} for n in group],
+               "resultsLimit": limit, "onlyPostsNewerThan": f"{days} days"}
+        return run_actor(token, "apify~facebook-posts-scraper", inp, "Step 2 posts")
+    inp = {"username": group, "resultsLimit": limit, "onlyPostsNewerThan": f"{days} days"}
+    return run_actor(token, "apify~instagram-post-scraper", inp, "Step 2 posts")
+
+
 def main():
     token = (os.environ.get("APIFY_TOKEN") or "").strip()
     if not token or not SUPABASE_URL or not os.environ.get("SUPABASE_SERVICE_ROLE_KEY"):
@@ -452,6 +512,24 @@ def main():
     if not names:
         print(f"No active {TRACKER} competitors in Supabase — nothing to do.")
         return
+    # "new" = no posts stored yet. New accounts get the full window (DAYS_BACK /
+    # RESULTS_LIMIT); accounts we already have only need a short refresh
+    # (REFRESH_DAYS / REFRESH_LIMIT) to catch new posts and update the numbers.
+    fresh = [n for n in names if not has_posts(n)]
+    if ONLY_NEW:
+        # accounts already flagged as failed are not retried on every add; pausing
+        # and re-adding them from the dashboard clears the flag
+        skipped = [n for n in fresh
+                   if (COMP_INFO.get(n.lower()) or {}).get("notes", "").startswith(FAIL_NOTE)]
+        fresh = [n for n in fresh if n not in skipped]
+        print(f"[{TRACKER}] only-new mode: {len(fresh)} new of {len(names)} active"
+              + (f" ({', '.join(fresh)})" if fresh else "")
+              + (f" | skipping {len(skipped)} flagged as failed" if skipped else ""))
+        if not fresh:
+            print("Nothing new to scrape — no Apify run started.")
+            return
+        names = fresh
+    existing = [n for n in names if n not in fresh]
     print(f"[{TRACKER}] {len(names)} competitors: {', '.join(names[:8])}"
           + (" ..." if len(names) > 8 else ""))
     print(f"  filter: ER>={MIN_ER:.1%} OR comments>={MIN_COMMENTS} OR "
@@ -472,9 +550,6 @@ def main():
                 if key:
                     followers[key] = int(c)
         print(f"  followers for {sum(1 for n in names if n in followers)}/{len(names)}")
-        posts = run_actor(token, "apify~facebook-posts-scraper",
-                          {"startUrls": page_urls, "resultsLimit": RESULTS_LIMIT,
-                           "onlyPostsNewerThan": f"{DAYS_BACK} days"}, "Step 2 posts")
     else:
         profiles = run_actor(token, "apify~instagram-profile-scraper",
                              {"usernames": names}, "Step 1 profiles")
@@ -487,18 +562,24 @@ def main():
         print(f"  followers for {len(followers)}/{len(names)}")
 
         try:
+            if ONLY_NEW:
+                raise RuntimeError("only-new mode: keeping the existing shortlist")
             suggest_competitors(profiles)
         except Exception as exc:
             print(f"[Suggest] skipped ({exc})")
 
-        posts = run_actor(token, "apify~instagram-post-scraper",
-                          {"username": names, "resultsLimit": RESULTS_LIMIT,
-                           "onlyPostsNewerThan": f"{DAYS_BACK} days"}, "Step 2 posts")
-    print(f"  scraped {len(posts)} posts (last {DAYS_BACK} days, "
-          f"<= {RESULTS_LIMIT}/account)")
+    posts = (scrape_posts(token, fresh, RESULTS_LIMIT, DAYS_BACK)
+             + scrape_posts(token, existing, REFRESH_LIMIT, REFRESH_DAYS))
+    print(f"  scraped {len(posts)} posts: {len(fresh)} new account(s) "
+          f"(last {DAYS_BACK} days, <= {RESULTS_LIMIT}), {len(existing)} existing "
+          f"(last {REFRESH_DAYS} days, <= {REFRESH_LIMIT})")
 
     today = datetime.now(timezone.utc).date().isoformat()
     rows = to_rows(posts, followers, today)
+    try:
+        report_results(names, followers, rows, today)
+    except Exception as exc:
+        print(f"[Notes] skipped ({exc})")
     if rows:
         for i in range(0, len(rows), 100):
             sb("posts?on_conflict=post_id", method="POST", data=rows[i:i+100],

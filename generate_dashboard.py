@@ -92,7 +92,7 @@ def fetch_active_handles(key):
     skips filtering, so a key problem or an older schema still builds the full
     dashboard instead of an empty one.
     """
-    url = f"{SUPABASE_URL}/rest/v1/competitors?select=username,active"
+    url = f"{SUPABASE_URL}/rest/v1/competitors?select=username,tracker,active"
     req = urllib.request.Request(url, headers={"apikey": key})
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
@@ -105,8 +105,10 @@ def fetch_active_handles(key):
         print("  WARNING: the competitors table is empty - "
               "showing every account that has posts")
         return None
-    return {h for h in (_handle(r.get("username"))
-                        for r in rows if r.get("active")) if h}
+    # keyed by (platform, handle): the same name can be tracked on IG and FB separately
+    return {(("FB" if r.get("tracker") == "FB" else "IG"), h)
+            for r in rows if r.get("active")
+            for h in [_handle(r.get("username"))] if h}
 
 
 def normalize(r):
@@ -343,6 +345,39 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     box-shadow: 0 12px 32px rgba(0,0,0,.5); transition: opacity .2s, transform .2s; }
   #toast.show { display: block; opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  /* ---- 管理竞对 ---- */
+  #mgr { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center;
+         padding: 16px; background: rgba(5,7,11,.72); }
+  #mgr.show { display: flex; }
+  #mgr .box { width: min(600px, 100%); max-height: 88vh; overflow: auto; background: var(--card);
+              border: 1px solid var(--border-hi); border-radius: 14px; padding: 20px; }
+  #mgr .mhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  #mgr h2 { font-family: var(--disp); font-size: 18px; }
+  #mgr .msec { margin-bottom: 18px; }
+  #mgr label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  #mgr .mrow { display: flex; gap: 8px; flex-wrap: wrap; }
+  #mgr input { flex: 1 1 180px; min-width: 0; background: #0c0f16; color: var(--text); font: inherit; font-size: 13px;
+               border: 1px solid var(--border); border-radius: 9px; padding: 8px 10px; }
+  #mgr input:focus { outline: none; border-color: var(--accent); }
+  #mgr .mhint { font-size: 11.5px; color: var(--faint); margin-top: 6px; line-height: 1.5; }
+  #mgr .mmsg { font-size: 12.5px; margin-top: 8px; line-height: 1.5; }
+  #mgr .mmsg.ok { color: var(--green); }
+  #mgr .mmsg.bad { color: var(--red); }
+  #mgr .crow { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--border); font-size: 13px; }
+  #mgr .crow .cn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #mgr .crow .cn a { color: var(--text); text-decoration: none; }
+  #mgr .crow .cn small { display: block; color: var(--faint); font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
+  #mgr .crow.off .cn a { color: var(--faint); text-decoration: line-through; }
+  #mgr .crow .btn { padding: 4px 10px; font-size: 12px; }
+  #mgr .prow { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-top: 1px solid var(--border);
+               font-size: 13px; color: var(--faint); }
+  #mgr .prow.run { color: var(--orange); }
+  #mgr .prow.ok { color: var(--green); }
+  #mgr .prow.bad { color: var(--red); }
+  #mgr details summary { cursor: pointer; font-size: 12px; color: var(--muted); }
+  #mgr details ol { margin: 8px 0 10px 18px; font-size: 12px; color: var(--muted); line-height: 1.7; }
+  #mgr details a, #mgr .mmsg a { color: var(--accent); }
+
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
   }
@@ -390,6 +425,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </select>
     <button class="btn" id="fVideo"><svg class="ic"><use href="#i-video"/></svg>只看视频</button>
 
+    <button class="btn" id="fManage" title="加 / 停 Instagram、Facebook 竞对"><svg class="ic"><use href="#i-users"/></svg>管理竞对</button>
     <a class="btn" href="team.html" target="_top" title="工作台"><svg class="ic"><use href="#i-users"/></svg>工作台</a>
   </div>
   <div class="tabs" id="tabs"></div>
@@ -402,6 +438,60 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <div class="more" id="moreWrap" style="display:none"><button id="moreBtn">载入更多</button></div>
 </main>
 <footer>数据来源 Supabase · __SYNC_DAY__自动更新 · 状态更改即时同步全团队 · 视频由 Instagram / Facebook 官方 embed 播放</footer>
+<div id="mgr" role="dialog" aria-modal="true" aria-labelledby="mgrTitle">
+  <div class="box">
+    <div class="mhead"><h2 id="mgrTitle">管理竞对</h2><button class="btn" id="mgrClose">关闭</button></div>
+    <div class="msec">
+      <label for="mgrPass">团队口令</label>
+      <div class="mrow">
+        <input id="mgrPass" type="password" placeholder="输入团队口令" autocomplete="off">
+        <button class="btn" id="mgrSave">验证并保存</button>
+        <button class="btn" id="mgrClear" style="display:none">清除</button>
+      </div>
+      <div class="mhint" id="mgrAuthMsg">口令只保存在这台电脑的浏览器里,不会写进网页。</div>
+      <details style="margin-top:8px">
+        <summary>更换团队口令</summary>
+        <div class="mhint" style="margin:6px 0">要先在上面验证现在的口令。换了之后,其他人下次操作时要重新输入新口令。</div>
+        <div class="mrow">
+          <input id="mgrNewPass" type="password" placeholder="新口令(至少 8 个字符)" autocomplete="new-password">
+          <button class="btn" id="mgrChangePass">更换</button>
+        </div>
+      </details>
+    </div>
+    <div class="msec">
+      <label for="mgrInput">加竞对</label>
+      <div class="mrow">
+        <select id="mgrPlat" aria-label="平台"><option value="IG">Instagram</option><option value="FB">Facebook</option></select>
+        <input id="mgrInput" placeholder="账号名 或 链接,可以一次贴好几个(逗号 / 空格隔开)" autocomplete="off">
+        <button class="btn" id="mgrAdd">添加</button>
+      </div>
+      <div class="mhint">Facebook 只能追踪公开主页(不能是个人账号、群组、单条帖子)。加好后会自动只抓新账号;设置好「自动抓取」之前,新账号要等每周同步。
+        <button class="btn" id="mgrSyncNow" style="padding:2px 9px;font-size:11.5px;margin-left:6px">现在抓新账号</button></div>
+      <div class="mmsg" id="mgrMsg"></div>
+    </div>
+    <div class="msec" id="mgrProg" style="display:none"></div>
+    <details class="msec" id="mgrGh">
+      <summary>自动抓取设置(第一次用,设置一次就好)</summary>
+      <div class="mhint" id="mgrGhState" style="margin:8px 0"></div>
+      <ol>
+        <li>打开 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub 新建令牌</a></li>
+        <li>Repository access 选 <b>Only select repositories</b>,只选这个仓库</li>
+        <li>Permissions → Repository permissions → <b>Actions</b> 选 <b>Read and write</b>,其他都不要开</li>
+        <li>生成后复制令牌,粘贴到下面。令牌只存进数据库,网页读不回来</li>
+      </ol>
+      <div class="mrow"><input id="mgrGhRepo" placeholder="用户名/仓库名" autocomplete="off"></div>
+      <div class="mrow" style="margin-top:8px">
+        <input id="mgrGhTok" type="password" placeholder="粘贴 GitHub 令牌(github_pat_ 开头)" autocomplete="off">
+        <button class="btn" id="mgrGhSave">保存</button>
+        <button class="btn" id="mgrGhClear">清除</button>
+      </div>
+    </details>
+    <div class="msec">
+      <label>现有竞对</label>
+      <div id="mgrList"><div class="mhint">载入中…</div></div>
+    </div>
+  </div>
+</div>
 <div id="toast"></div>
 <script id="data" type="application/json">__DATA__</script>
 <script>
@@ -422,11 +512,14 @@ const I = n => '<svg class="ic"><use href="#i-' + n + '"/></svg>';
 const esc = s => String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const byRec = {}; DATA.forEach(d => byRec[d.id] = d);
 const profileUrl = d => d.platform === 'FB' ? 'https://www.facebook.com/' + d.competitor + '/' : 'https://www.instagram.com/' + d.competitor + '/';
+// 暂停的账号的帖子也留在页面里(act:false),由浏览器隐藏,所以在网页上暂停 / 恢复马上生效
+const ALLPOSTS = DATA.slice();
+DATA.length = 0; ALLPOSTS.filter(d => d.act !== false).forEach(d => DATA.push(d));
 const embedSrc = d => d.platform === 'FB'
   ? 'https://www.facebook.com/plugins/' + (d.video ? 'video' : 'post') + '.php?href=' + encodeURIComponent(d.url) + '&show_text=false&width=500'
   : 'https://www.instagram.com/p/' + d.id + '/embed/';
 const TRENDS = __TRENDS__;
-DATA.forEach(d => {
+ALLPOSTS.forEach(d => {
   d.days = d.date ? Math.max(0, Math.floor((Date.now() - new Date(d.date + 'T00:00:00')) / 864e5)) : null;
   d.horse = d.followers > 0 && d.followers < 50000 && ((d.x || 0) >= 2 || d.score >= 10);
 });
@@ -445,6 +538,14 @@ function toast(msg, ok) {
 }
 
 // filters
+function refillComps() {
+  const sel = $('fComp'), cur = sel.value;
+  sel.innerHTML = '<option value="">全部 Competitor</option>';
+  [...new Set(DATA.map(d => d.competitor))].sort().forEach(c => {
+    const o = document.createElement('option'); o.value = c; o.textContent = '@' + c; sel.appendChild(o);
+  });
+  sel.value = [...sel.options].some(o => o.value === cur) ? cur : '';
+}
 const comps = [...new Set(DATA.map(d => d.competitor))].sort();
 comps.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = '@'+c; $('fComp').appendChild(o); });
 [...new Set(DATA.map(d => d.tracker))].forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; $('fTracker').appendChild(o); });
@@ -661,6 +762,245 @@ async function refreshStatuses() {
 $('fSearch').oninput = () => { shown = PAGE; render(); };
 $('fVideo').onclick = () => { videoOnly = !videoOnly; $('fVideo').classList.toggle('on', videoOnly); shown = PAGE; render(); };
 $('moreBtn').onclick = () => { shown += PAGE; render(); };
+
+// ---- 管理竞对:加 / 停竞对(经口令保护的 Supabase 函数,见 admin_competitors.sql) ----
+const MGR_KEY = 'radar_team_pass';
+const getPass = () => { try { return localStorage.getItem(MGR_KEY) || ''; } catch (e) { return ''; } };
+const setPass = v => { try { if (v) localStorage.setItem(MGR_KEY, v); else localStorage.removeItem(MGR_KEY); } catch (e) {} };
+const MGR_ERR = {
+  bad_passcode: '口令不对',
+  locked: '输错次数太多,已锁定 10 分钟,请稍后再试',
+  no_passcode: '还没设置团队口令:请先在 Supabase 运行 admin_competitors.sql',
+  bad_platform: '平台只能选 Instagram 或 Facebook',
+  bad_handle: '账号名或链接不对:只要账号名(或账号 / 主页链接),不要帖子链接,也不能是个人账号、群组',
+  platform_mismatch: '链接和你选的平台对不上',
+  limit_reached: '活跃竞对已到上限,先停掉几个再加',
+  weak_passcode: '新口令至少 8 个字符',
+  bad_repo: '仓库名格式不对,应该是 用户名/仓库名',
+  bad_token: '令牌格式不对,应该以 github_pat_ 开头',
+  not_found: '找不到这个竞对'
+};
+async function rpc(fn, args) {
+  const r = await fetch(SUPA + '/rest/v1/rpc/' + fn, {
+    method: 'POST',
+    headers: { 'apikey': ANON, 'Content-Type': 'application/json' },
+    body: JSON.stringify(args || {})
+  });
+  if (r.status === 404) throw new Error('NOFN');
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+const mgrErrText = e => String(e && e.message) === 'NOFN'
+  ? '还没安装:请先在 Supabase → SQL Editor 运行仓库里的 admin_competitors.sql'
+  : '出错了:' + (e && e.message ? e.message : e);
+function mgrMsg(text, ok) {
+  const el = $('mgrMsg'); el.textContent = text; el.className = 'mmsg ' + (ok ? 'ok' : 'bad');
+}
+function mgrAuthUi() {
+  const has = !!getPass();
+  $('mgrClear').style.display = has ? '' : 'none';
+  $('mgrAuthMsg').textContent = has
+    ? '✓ 口令已保存在这台电脑的浏览器里。'
+    : '口令只保存在这台电脑的浏览器里,不会写进网页。';
+}
+const PLAT_NAME = { IG: 'Instagram', FB: 'Facebook' };
+// 按 Supabase 里最新的「追踪名单」显示帖子:在网页上暂停 / 恢复账号,马上生效,不用等重新部署
+const actKey = (plat, name) => (plat === 'FB' ? 'FB' : 'IG') + ':' + String(name || '').replace(/^@+/, '').trim().toLowerCase();
+function applyActive(rows) {
+  if (!Array.isArray(rows) || !rows.length) return;
+  const on = new Set(rows.filter(c => c.active).map(c => actKey(c.tracker, c.username)));
+  const next = ALLPOSTS.filter(d => on.has(actKey(d.platform, d.competitor)));
+  if (!next.length && ALLPOSTS.length) return;   // 名字对不上时不要把整个页面清空
+  DATA.length = 0; next.forEach(d => DATA.push(d));
+  refillComps(); shown = PAGE; render();
+}
+rpc('list_competitors').then(applyActive).catch(() => {});
+const profUrl = (plat, u) => (plat === 'FB' ? 'https://www.facebook.com/' : 'https://www.instagram.com/') + encodeURIComponent(u) + '/';
+// ---- 自动抓取:加账号后让 GitHub 只抓新账号,并在面板里显示进度 ----
+const REPO = '__REPO__';
+let ghRepo = REPO;
+const GH_STEPS = [['Sync Content', '抓取帖子'], ['Transcribe Videos', '转录视频'], ['Analyze Posts', 'AI 拆解'], ['Deploy Dashboard', '更新网页']];
+let progTimer = null;
+function mgrFail(r) {
+  if (r.error === 'bad_passcode') { setPass(''); mgrAuthUi(); }
+  mgrMsg(MGR_ERR[r.error] || ('失败:' + r.error), false);
+}
+async function ghLoad() {
+  try {
+    const s = await rpc('github_status');
+    if (s.repo) ghRepo = s.repo;
+    $('mgrGhRepo').value = ghRepo || '';
+    $('mgrGhState').textContent = s.configured
+      ? '✓ 已设置:加账号后会自动开始抓取新账号(仓库 ' + s.repo + ')'
+      : '还没设置:加账号后不会自动抓取,要等每周同步,或去 GitHub 手动运行。';
+  } catch (e) { $('mgrGhState').textContent = ''; }
+}
+function stopProg() { if (progTimer) { clearInterval(progTimer); progTimer = null; } }
+function startProg() {
+  stopProg();
+  if (!ghRepo) return;
+  const since = Date.now() - 90 * 1000, until = Date.now() + 15 * 60 * 1000;
+  const box = $('mgrProg'); box.style.display = '';
+  const tick = async () => {
+    try {
+      const r = await fetch('https://api.github.com/repos/' + ghRepo + '/actions/runs?per_page=20',
+        { headers: { 'Accept': 'application/vnd.github+json' } });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const runs = (await r.json()).workflow_runs.filter(w => Date.parse(w.created_at) >= since);
+      let html = '<label>抓取进度</label>', done = false, bad = null;
+      GH_STEPS.forEach(([name, label]) => {
+        const w = runs.filter(x => x.name === name).sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))[0];
+        let st = '等待中', cls = '';
+        if (w) {
+          if (w.status !== 'completed') { st = '进行中…'; cls = 'run'; }
+          else if (w.conclusion === 'success') { st = '✓ 完成'; cls = 'ok'; }
+          else { st = '✗ 失败'; cls = 'bad'; bad = bad || w; }
+        }
+        if (name === 'Deploy Dashboard' && cls === 'ok') done = true;
+        html += '<div class="prow ' + cls + '"><span>' + label + '</span><span>' + st + '</span></div>';
+      });
+      html += done ? '<div class="mmsg ok">全部完成。<button class="btn" id="mgrReload">刷新页面看新帖子</button></div>'
+        : bad ? '<div class="mmsg bad">有一步失败了,<a href="' + esc(bad.html_url) + '" target="_blank" rel="noopener">点这里看日志</a></div>'
+        : '<div class="mhint">通常要几分钟。关掉这个面板不影响抓取。</div>';
+      box.innerHTML = html;
+      const rb = $('mgrReload'); if (rb) rb.onclick = () => location.reload();
+      if (done || bad || Date.now() > until) stopProg();
+    } catch (e) {
+      box.innerHTML = '<div class="mhint">暂时读不到进度(' + esc(e.message) + '),不影响抓取。</div>';
+      stopProg();
+    }
+  };
+  tick(); progTimer = setInterval(tick, 20000);
+}
+function syncNote(sync) {
+  if (sync === 'sent') { startProg(); return '已通知 GitHub,马上开始抓取新账号,进度见下方。'; }
+  if (sync === 'no_token') return '还没设置自动抓取(见下方「自动抓取设置」),新账号要等每周同步才会抓。';
+  if (sync === 'error') return '通知 GitHub 失败了(令牌可能过期或权限不对),新账号要等每周同步才会抓。';
+  return '';
+}
+async function loadMgr() {
+  ghLoad();
+  mgrAuthUi();
+  const box = $('mgrList');
+  try {
+    const rows = await rpc('list_competitors');
+    applyActive(rows);
+    if (!rows.length) { box.innerHTML = '<div class="mhint">还没有竞对</div>'; return; }
+    box.innerHTML = '';
+    rows.forEach(c => {
+      const row = document.createElement('div');
+      row.className = 'crow' + (c.active ? '' : ' off');
+      row.innerHTML = '<span class="badge">' + esc(c.tracker) + '</span>'
+        + '<span class="cn"><a href="' + profUrl(c.tracker, c.username) + '" target="_blank" rel="noopener">@' + esc(c.username) + '</a>'
+        + (c.notes ? '<small>' + esc(c.notes) + '</small>' : '') + '</span>'
+        + '<button class="btn">' + (c.active ? '停止追踪' : '恢复') + '</button>';
+      row.querySelector('button').onclick = () => toggleComp(c);
+      box.appendChild(row);
+    });
+  } catch (e) {
+    box.innerHTML = '<div class="mmsg bad">' + esc(mgrErrText(e)) + '</div>';
+  }
+}
+async function toggleComp(c) {
+  if (!getPass()) { mgrMsg('请先在上面输入并验证团队口令', false); return; }
+  try {
+    const r = await rpc('set_competitor_active', { p_pass: getPass(), p_id: c.id, p_active: !c.active });
+    if (!r.ok) {
+      if (r.error === 'bad_passcode') { setPass(''); mgrAuthUi(); }
+      mgrMsg(MGR_ERR[r.error] || ('失败:' + r.error), false);
+      return;
+    }
+    mgrMsg((c.active ? '已停止追踪 @' : '已恢复追踪 @') + c.username + '(历史数据保留)。' + syncNote(r.sync),
+      r.sync === 'sent' || !r.sync);
+    loadMgr();
+  } catch (e) { mgrMsg(mgrErrText(e), false); }
+}
+function openMgr() { $('mgr').classList.add('show'); mgrMsg('', true); loadMgr(); }
+function closeMgr() { $('mgr').classList.remove('show'); }
+$('fManage').onclick = openMgr;
+$('mgrClose').onclick = closeMgr;
+$('mgr').onclick = e => { if (e.target === $('mgr')) closeMgr(); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMgr(); });
+$('mgrClear').onclick = () => { setPass(''); $('mgrPass').value = ''; mgrAuthUi(); mgrMsg('已清除这台电脑上保存的口令', true); };
+$('mgrSave').onclick = async () => {
+  const p = $('mgrPass').value;
+  if (!p) { mgrMsg('请输入团队口令', false); return; }
+  try {
+    const r = await rpc('verify_admin', { p_pass: p });
+    if (!r.ok) { mgrMsg(MGR_ERR[r.error] || ('失败:' + r.error), false); return; }
+    setPass(p); $('mgrPass').value = ''; mgrAuthUi(); mgrMsg('口令正确,已保存', true);
+  } catch (e) { mgrMsg(mgrErrText(e), false); }
+};
+$('mgrAdd').onclick = async () => {
+  // 一次可以加好几个:用逗号、空格或换行隔开。只在全部加完后通知 GitHub 一次。
+  const pass = getPass(), plat = $('mgrPlat').value;
+  const items = $('mgrInput').value.split(/[\\s,，;；]+/).filter(Boolean);
+  if (!pass) { mgrMsg('请先在上面输入并验证团队口令', false); return; }
+  if (!items.length) { mgrMsg('请输入账号名或链接', false); return; }
+  if (items.length > 20) { mgrMsg('一次最多加 20 个', false); return; }
+  $('mgrAdd').disabled = true;
+  const done = [], dup = [], bad = [], badRaw = [];
+  const SHORT = { bad_handle: '格式不对', platform_mismatch: '链接和平台对不上' };
+  let sync = '', fatal = null;
+  try {
+    for (const it of items) {
+      const r = await rpc('add_competitor', { p_pass: pass, p_platform: plat, p_input: it, p_sync: items.length === 1 });
+      if (!r.ok) {
+        if (SHORT[r.error]) { bad.push(it + '(' + SHORT[r.error] + ')'); badRaw.push(it); continue; }
+        fatal = r; break;
+      }
+      if (r.status === 'exists') dup.push('@' + r.username);
+      else { done.push('@' + r.username); if (r.sync) sync = r.sync; }
+    }
+    if (done.length && items.length > 1) sync = (await rpc('trigger_sync', { p_pass: pass })).sync || '';
+    const parts = [];
+    if (done.length) parts.push('已加入 ' + done.join('、') + '(' + PLAT_NAME[plat] + ')。' + syncNote(sync));
+    if (dup.length) parts.push(dup.join('、') + ' 已经在名单里了。');
+    if (bad.length) parts.push('没加:' + bad.join('、') + '。要的是账号名或账号 / 主页链接,不要帖子链接。');
+    if (fatal) { mgrFail(fatal); if (done.length) loadMgr(); return; }
+    mgrMsg(parts.join(' '), !bad.length && (sync === 'sent' || !sync));
+    $('mgrInput').value = badRaw.join(' ');   // 只留下没加成功的,方便改了重试
+    loadMgr();
+  } catch (e) { mgrMsg(mgrErrText(e), false); }
+  finally { $('mgrAdd').disabled = false; }
+};
+$('mgrChangePass').onclick = async () => {
+  const pass = getPass(), np = $('mgrNewPass').value;
+  if (!pass) { mgrMsg('请先在上面验证现在的口令', false); return; }
+  if (!np) { mgrMsg('请输入新口令', false); return; }
+  try {
+    const r = await rpc('change_passcode', { p_pass: pass, p_new: np });
+    if (!r.ok) { mgrFail(r); return; }
+    setPass(np); $('mgrNewPass').value = ''; mgrAuthUi();
+    mgrMsg('口令已更换。这台电脑已记住新口令,其他人下次操作时要重新输入。', true);
+  } catch (e) { mgrMsg(mgrErrText(e), false); }
+};
+$('mgrSyncNow').onclick = async () => {
+  const pass = getPass();
+  if (!pass) { mgrMsg('请先在上面输入并验证团队口令', false); return; }
+  try {
+    const r = await rpc('trigger_sync', { p_pass: pass });
+    if (!r.ok) { mgrFail(r); return; }
+    mgrMsg(syncNote(r.sync), r.sync === 'sent');
+  } catch (e) { mgrMsg(mgrErrText(e), false); }
+};
+async function saveGh(clear) {
+  const pass = getPass();
+  if (!pass) { mgrMsg('请先在上面输入并验证团队口令', false); return; }
+  const repo = $('mgrGhRepo').value.trim(), tok = clear ? '' : $('mgrGhTok').value.trim();
+  if (!clear && !tok) { mgrMsg('请粘贴 GitHub 令牌', false); return; }
+  try {
+    const r = await rpc('set_github_settings', { p_pass: pass, p_repo: repo, p_token: tok });
+    if (!r.ok) { mgrFail(r); return; }
+    $('mgrGhTok').value = '';
+    mgrMsg(clear ? '已清除自动抓取设置' : '已保存。以后加账号会自动开始抓取新账号。', true);
+    ghLoad();
+  } catch (e) { mgrMsg(mgrErrText(e), false); }
+}
+$('mgrGhSave').onclick = () => saveGh(false);
+$('mgrGhClear').onclick = () => saveGh(true);
+$('mgrInput').onkeydown = e => { if (e.key === 'Enter') $('mgrAdd').click(); };
+$('mgrPass').onkeydown = e => { if (e.key === 'Enter') $('mgrSave').click(); };
 
 // preset quick filters
 $('presets').innerHTML = '<span class="lbl">快筛</span>';
@@ -1174,18 +1514,20 @@ def main():
     # Supabase hides it here; its rows stay in the table, so ticking it back
     # later brings the whole history with it.
     active = fetch_active_handles(svc)
-    if active is not None:
-        kept = [p for p in unique if _handle(p["competitor"]) in active]
-        dropped = sorted({p["competitor"] for p in unique
-                          if _handle(p["competitor"]) not in active})
-        if kept:
-            if dropped:
-                print("  hidden (active not ticked): " + ", ".join(dropped))
-            print(f"  {len(unique)} -> {len(kept)} posts after the active filter")
-            unique = kept
-        elif unique:
-            print("  WARNING: that would hide every post - skipping the active "
-                  "filter. Check the usernames in the competitors table.")
+    # Paused accounts are NOT dropped from the page: they are flagged `act: false`
+    # and hidden by the browser, which also reads the live list from Supabase. That
+    # way pausing / resuming from the dashboard takes effect at once, without
+    # waiting for the next deploy.
+    for p in unique:
+        p["act"] = True if active is None else ((p["platform"], _handle(p["competitor"])) in active)
+    if active is not None and unique and not any(p["act"] for p in unique):
+        print("  WARNING: that would hide every post - skipping the active "
+              "filter. Check the usernames in the competitors table.")
+        for p in unique:
+            p["act"] = True
+    paused = sorted({p["competitor"] for p in unique if not p["act"]})
+    if paused:
+        print("  paused (kept in the page, hidden until resumed): " + ", ".join(paused))
 
     # outlier multiplier: post score vs the account's own median score
     import statistics
@@ -1202,6 +1544,8 @@ def main():
     from collections import Counter
     cnt = Counter()
     for p in unique:
+        if not p.get("act", True):
+            continue
         if (p.get("x") or 0) >= 2 or (p["score"] or 0) >= 10:
             for tag in re.split(r"[,\s]+", p.get("tags") or ""):
                 tag = tag.strip().lstrip("#").lower()
@@ -1212,10 +1556,14 @@ def main():
     myt = timezone(timedelta(hours=8))
     updated = datetime.now(myt).strftime("%Y-%m-%d %H:%M") + " (GMT+8)"
     payload = json.dumps(unique, ensure_ascii=False).replace("</", "<\\/")
+    # the team page has no live filter, so it only gets active accounts' posts
+    team_payload = json.dumps([p for p in unique if p.get("act", True)],
+                              ensure_ascii=False).replace("</", "<\\/")
     html = (
         HTML_TEMPLATE
         .replace("__BRAND__", BRAND)
         .replace("__SYNC_DAY__", SYNC_DAY)
+        .replace("__REPO__", os.environ.get("GITHUB_REPOSITORY", ""))
         .replace("__DATA__", payload)
         .replace("__UPDATED__", updated)
         .replace("__SUPA_URL__", SUPABASE_URL)
@@ -1232,7 +1580,7 @@ def main():
     # team portal — slim payload (no captions beyond first 200 chars needed for hooks)
     team_html = (
         TEAM_TEMPLATE
-        .replace("__DATA__", payload)
+        .replace("__DATA__", team_payload)
         .replace("__UPDATED__", updated)
         .replace("__SUPA_URL__", SUPABASE_URL)
         .replace("__SUPA_ANON__", SUPABASE_ANON_KEY)

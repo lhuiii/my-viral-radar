@@ -12,6 +12,11 @@ on:
 permissions:
   contents: write
 
+# 同一时间只更新一次网页,避免两次同时 push 互相冲突
+concurrency:
+  group: deploy-dashboard
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest

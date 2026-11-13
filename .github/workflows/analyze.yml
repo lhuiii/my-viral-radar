@@ -9,6 +9,11 @@ on:
 permissions:
   contents: read
 
+# 同一时间只拆解一次,避免两个运行同时处理同一批帖子、重复花 AI 额度
+concurrency:
+  group: analyze
+  cancel-in-progress: false
+
 jobs:
   analyze:
     runs-on: ubuntu-latest
