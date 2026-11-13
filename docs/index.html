@@ -1,25 +1,540 @@
 <!DOCTYPE html>
-<html lang="zh"><head>
+<html lang="zh">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<meta http-equiv="refresh" content="60">
-<title>爆款雷达 · 还在加载</title>
+<title>Innotech Security Sdn Bhd</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
-       background:#0a0d13;color:#e8e8ea;text-align:center;padding:24px;
-       font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
-  .spin{width:34px;height:34px;margin:0 auto 26px;border:3px solid #2a2f3a;
-        border-top-color:#ff785a;border-radius:50%;animation:s 1s linear infinite}
-  @keyframes s{to{transform:rotate(360deg)}}
-  h1{font-size:23px;margin:0 0 14px;font-weight:600}
-  p{margin:8px 0;color:#9a9aa2;font-size:15px;line-height:1.75}
-  .hint{margin-top:30px;font-size:13.5px;color:#6e6e78}
-  @media(prefers-reduced-motion:reduce){.spin{animation:none}}
-</style></head><body><div>
-  <div class="spin"></div>
-  <h1>你的页面还在加载中,请稍等</h1>
-  <p>第一次大约需要 20-60 分钟。</p>
-  <p>这一页会自己刷新,你可以先去忙别的。</p>
-  <p class="hint">等很久都没变?回到安装 SOP 第 7 步,<br>到仓库的 Actions 看 Sync Content 有没有跑完。</p>
-</div></body></html>
+  :root {
+    --bg: #0a0d13;
+    --card: #11151d;
+    --card-hi: #151a24;
+    --border: #1d2430;
+    --border-hi: #2c3546;
+    --text: #e8ecf3;
+    --muted: #8a94a6;
+    --faint: #5b6577;
+    --accent: #5ea1ff;
+    --green: #3fd68f;
+    --orange: #f0a33f;
+    --pink: #ff6b9d;
+    --red: #ff5c5c;
+    --fire1: #ff8a3d;
+    --fire2: #ff4d6d;
+    --font: 'Inter', -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --disp: 'Space Grotesk', 'Inter', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scrollbar-color: #232c3b var(--bg); }
+  body { background: var(--bg); color: var(--text); font-family: var(--font);
+    -webkit-font-smoothing: antialiased; }
+  ::selection { background: rgba(94,161,255,.3); }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: #232c3b; border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: #2c3546; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+  .ic { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2;
+    stroke-linecap: round; stroke-linejoin: round; fill: none; flex: none; }
+
+  header { position: sticky; top: 0; z-index: 50; background: rgba(10,13,19,.86);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border); padding: 13px 20px 12px; }
+  .hrow { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; max-width: 1440px; margin: 0 auto; }
+  .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+  .mark { width: 31px; height: 31px; border-radius: 9px; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--fire1), var(--fire2));
+    box-shadow: 0 4px 16px rgba(255,92,80,.35); }
+  .mark .ic { width: 17px; height: 17px; color: #fff; }
+  h1 { font-family: var(--disp); font-size: 16.5px; font-weight: 700; letter-spacing: .2px; white-space: nowrap; line-height: 1.15; }
+  h1 small { display: block; color: var(--faint); font-family: var(--font); font-weight: 400;
+    font-size: 10.5px; letter-spacing: 0; }
+
+  .search { position: relative; }
+  .search > .ic { position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+    color: var(--faint); width: 13.5px; pointer-events: none; }
+  input#fSearch { background: var(--card); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 12px 8px 32px; font-size: 13px; font-family: var(--font);
+    width: 200px; transition: border-color .18s, background .18s; }
+  input#fSearch:hover { border-color: var(--border-hi); }
+  input#fSearch:focus { border-color: var(--accent); outline: none; }
+  input#fSearch::placeholder { color: var(--faint); }
+
+  select, .btn { background: var(--card); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 11px; font-size: 13px; font-family: var(--font);
+    cursor: pointer; transition: border-color .18s, background .18s, color .18s;
+    display: inline-flex; align-items: center; gap: 6px; }
+  select:hover, .btn:hover { border-color: var(--border-hi); background: var(--card-hi); }
+  .btn:active { transform: scale(.97); }
+  .btn.on { border-color: var(--accent); color: var(--accent); background: rgba(94,161,255,.08); }
+
+  .tabs { display: flex; gap: 7px; flex-wrap: wrap; max-width: 1440px; margin: 12px auto 0; }
+  .tab { display: inline-flex; align-items: center; gap: 7px; background: var(--card);
+    border: 1px solid var(--border); border-radius: 999px; padding: 6.5px 14px;
+    font-size: 13px; color: var(--muted); cursor: pointer; user-select: none;
+    transition: border-color .18s, background .18s, color .18s, transform .18s; }
+  .tab:hover { border-color: var(--border-hi); color: var(--text); }
+  .tab .cnt { font-family: var(--disp); font-weight: 600; font-size: 11px;
+    background: rgba(255,255,255,.06); padding: 1.5px 7.5px; border-radius: 99px;
+    font-variant-numeric: tabular-nums; }
+  .tab.on { color: var(--text);
+    background: linear-gradient(135deg, rgba(255,138,61,.15), rgba(255,77,109,.15));
+    border-color: rgba(255,120,90,.45); }
+  .tab.on .cnt { background: rgba(255,120,90,.25); }
+  body.dragging .tab.droppable { border-style: dashed; border-color: var(--accent); }
+  .tab.over { background: rgba(94,161,255,.22); color: var(--text); transform: scale(1.07); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; max-width: 1440px; margin: 9px auto 0; align-items: center; }
+  .chips .lbl { font-size: 12px; color: var(--faint); margin-right: 2px; }
+  .chip2 { display: inline-flex; align-items: center; gap: 5.5px; background: var(--card);
+    border: 1px solid var(--border); border-radius: 999px; padding: 4.5px 12px;
+    font-size: 12px; color: var(--muted); cursor: pointer; user-select: none;
+    transition: border-color .18s, color .18s, background .18s;
+    font-variant-numeric: tabular-nums; }
+  .chip2 .ic { width: 12.5px; height: 12.5px; }
+  .chip2:hover { border-color: var(--border-hi); color: var(--text); }
+  .chip2.on { border-color: rgba(240,163,63,.6); color: var(--orange); background: rgba(240,163,63,.08); }
+
+  main { max-width: 1440px; margin: 22px auto; padding: 0 20px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(305px, 1fr)); gap: 18px; }
+
+  .card { position: relative; background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .22s cubic-bezier(.2,.7,.3,1), border-color .22s, box-shadow .22s;
+    animation: fadeUp .45s cubic-bezier(.2,.7,.3,1) both; }
+  .card:hover { transform: translateY(-3px); border-color: var(--border-hi);
+    box-shadow: 0 12px 32px rgba(0,0,0,.45); }
+  .card.outlier::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--fire1), var(--fire2)); z-index: 2; }
+  .card[draggable] { cursor: grab; }
+  .card.lifting { opacity: .45; }
+  .card.saved { border-color: var(--green); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  .embed { position: relative; width: 100%; aspect-ratio: 4/5; background: #080b10; }
+  .embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .embed .ph { position: absolute; inset: 0; display: grid; place-items: center;
+    background: linear-gradient(110deg, #0b0e15 8%, #121826 18%, #0b0e15 33%);
+    background-size: 200% 100%; animation: shimmer 1.5s linear infinite; }
+  .embed .ph .ic { width: 30px; height: 30px; color: #2a3342; stroke-width: 1.6; }
+  @keyframes shimmer { to { background-position-x: -200%; } }
+
+  .meta { padding: 13px 15px 14px; display: flex; flex-direction: column; gap: 9px; }
+  .row1 { display: flex; align-items: center; gap: 7px; font-size: 13px; flex-wrap: wrap; }
+  .handle { color: #3a4456; cursor: grab; display: inline-flex; }
+  .handle .ic { width: 13px; height: 13px; }
+  .who { font-weight: 600; color: var(--accent); text-decoration: none; }
+  .who:hover { text-decoration: underline; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 500;
+    padding: 2.5px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+  .badge .ic { width: 10.5px; height: 10.5px; }
+  .badge.bnew { color: var(--pink); border-color: rgba(255,107,157,.45); background: rgba(255,107,157,.07); }
+  .badge.bhorse { color: var(--orange); border-color: rgba(240,163,63,.45); background: rgba(240,163,63,.07); }
+  .badge.bbait { color: var(--accent); border-color: rgba(94,161,255,.4); background: rgba(94,161,255,.07); }
+  .date { margin-left: auto; color: var(--faint); font-size: 11px; font-variant-numeric: tabular-nums; }
+
+  .nums { display: flex; gap: 6px; flex-wrap: wrap; }
+  .num { display: inline-flex; align-items: center; gap: 5px; background: #0c0f16;
+    border: 1px solid var(--border); border-radius: 9px; padding: 5px 9px;
+    font-size: 11px; color: var(--muted); }
+  .num .ic { width: 11.5px; height: 11.5px; }
+  .num b { font-family: var(--disp); color: var(--text); font-size: 12.5px; font-weight: 600;
+    font-variant-numeric: tabular-nums; }
+  .num.hot { border-color: rgba(255,122,77,.35); }
+  .num.hot .ic, .num.hot b { color: #ff7a4d; }
+  .num.x { border-color: rgba(240,163,63,.35); }
+  .num.x .ic, .num.x b { color: var(--orange); }
+  .num.er .ic, .num.er b { color: var(--green); }
+
+  .cap { color: var(--muted); font-size: 12.5px; line-height: 1.55; display: -webkit-box;
+    -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
+  .cap.open { -webkit-line-clamp: unset; }
+  .cap b { color: var(--text); font-weight: 600; }
+  .ai { border-left: 2px solid var(--orange); background: rgba(240,163,63,.06);
+    padding: 8px 11px; border-radius: 0 10px 10px 0; font-size: 12px; line-height: 1.65;
+    color: var(--muted); }
+  .ai b { color: var(--orange); font-weight: 600; }
+  .mine { border-left: 2px solid var(--green); background: rgba(63,214,143,.06);
+    padding: 8px 11px; border-radius: 0 10px 10px 0; font-size: 12px; line-height: 1.65;
+    color: var(--muted); cursor: pointer; display: -webkit-box; -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; }
+  .mine.open { -webkit-line-clamp: unset; }
+  .mine b { color: var(--green); font-weight: 600; }
+
+  .srow { display: flex; align-items: center; gap: 7px; }
+  .srow label { font-size: 12px; color: var(--faint); }
+  .status { flex: 1; padding: 6px 9px; font-size: 12.5px; }
+  .status.s未处理 { color: var(--muted); }
+  .status.s拍摄中 { color: var(--orange); border-color: rgba(240,163,63,.5); }
+  .status.s已处理 { color: var(--green); border-color: rgba(63,214,143,.5); }
+  .status.s跳过 { color: var(--red); border-color: rgba(255,92,92,.5); }
+  .abtn { display: inline-flex; align-items: center; gap: 5px; background: #0c0f16;
+    color: var(--muted); border: 1px solid var(--border); border-radius: 9px;
+    padding: 6px 10px; font-size: 11.5px; font-family: var(--font); cursor: pointer;
+    text-decoration: none; transition: color .18s, border-color .18s, transform .1s; }
+  .abtn .ic { width: 12px; height: 12px; }
+  .abtn:hover { color: var(--accent); border-color: rgba(94,161,255,.5); }
+  .abtn:active { transform: scale(.95); }
+
+  .more { text-align: center; margin: 28px 0 44px; }
+  .more button { background: var(--card); color: var(--accent); border: 1px solid var(--border);
+    border-radius: 12px; padding: 11px 30px; font-size: 14px; font-family: var(--font);
+    cursor: pointer; transition: border-color .18s, background .18s; }
+  .more button:hover { border-color: var(--border-hi); background: var(--card-hi); }
+
+  .empty { color: var(--faint); text-align: center; padding: 70px 0; display: flex;
+    flex-direction: column; align-items: center; gap: 12px; font-size: 14px; }
+  .empty .ic { width: 34px; height: 34px; stroke-width: 1.5; color: #2c3546; }
+
+  footer { color: var(--faint); font-size: 11px; text-align: center; padding: 22px; }
+
+  #toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(8px);
+    background: var(--card-hi); border: 1px solid var(--border-hi); border-radius: 11px;
+    padding: 11px 20px; font-size: 13px; display: none; z-index: 99; opacity: 0;
+    box-shadow: 0 12px 32px rgba(0,0,0,.5); transition: opacity .2s, transform .2s; }
+  #toast.show { display: block; opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></symbol>
+  <symbol id="i-msg" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l2.9 6.9 7.1.6-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.5l7.1-.6z"/></symbol>
+  <symbol id="i-magnet" viewBox="0 0 24 24"><path d="m6 15-4-4 6.75-6.77a7.79 7.79 0 0 1 11 11L13 22l-4-4 6.39-6.36a2.14 2.14 0 0 0-3-3L6 15"/><path d="m5 8 4 4"/><path d="m12 15 4 4"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h6"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></symbol>
+  <symbol id="i-video" viewBox="0 0 24 24"><path d="m10 8 6 4-6 4Z"/><rect x="2" y="4" width="20" height="16" rx="3"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></symbol>
+  <symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></symbol>
+  <symbol id="i-pct" viewBox="0 0 24 24"><path d="M19 5 5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></symbol>
+</svg>
+<header>
+  <div class="hrow">
+    <div class="brand">
+      <div class="mark"><svg class="ic"><use href="#i-flame"/></svg></div>
+      <h1>Innotech Security Sdn Bhd<small id="updated"></small></h1>
+    </div>
+    <div class="search"><svg class="ic"><use href="#i-search"/></svg>
+      <input id="fSearch" placeholder="搜文案 / hashtag / 账号"></div>
+    <select id="fTracker"><option value="">全部 Tracker</option></select>
+    <select id="fComp"><option value="">全部 Competitor</option></select>
+    <select id="fSort">
+      <option value="x">按 爆款倍数 (vs 自家平均)</option>
+      <option value="score">按 Viral Score</option>
+      <option value="er">按 Engagement Rate</option>
+      <option value="comments">按 Comments</option>
+      <option value="likes">按 Likes</option>
+      <option value="date">按 最新日期</option>
+    </select>
+    <button class="btn" id="fVideo"><svg class="ic"><use href="#i-video"/></svg>只看视频</button>
+
+    <a class="btn" href="team.html" target="_top" title="工作台"><svg class="ic"><use href="#i-users"/></svg>工作台</a>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="chips" id="presets"></div>
+  <div class="chips" id="trends"></div>
+</header>
+<main>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none"><svg class="ic"><use href="#i-search"/></svg>没有符合条件的帖子</div>
+  <div class="more" id="moreWrap" style="display:none"><button id="moreBtn">载入更多</button></div>
+</main>
+<footer>数据来源 Supabase · 每周自动更新 · 状态更改即时同步全团队 · 视频由 Instagram 官方 embed 播放</footer>
+<div id="toast"></div>
+<script id="data" type="application/json">[{"id": "DfY_PviPRyt", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "taiguan85", "caption": "CCTV可以拍到鬼吗？", "transcript": "你相信CTV可以拍到鬼嗎?我做CTV那麼多年了真的是有一次Customer 先一個影片給我我看到我都嚇到奇蹟逼嗝去年有一個Customer他家是住在遊總壩的中心他四周都是遊總樹的他找我們Newer House在他的家外面四周裝了四個Camera原本只是為了防賊的因為他家外面放了很多遊總的肥料跟藥水可是裝不到一個夜Customer 呼籠WhatsApp發了一個影片給我他問我Mr.Core你幫我看看這是什麼東西來的我就打開影片一看我是看到一個某某的影子從外面慢慢的進去他窗口裡面問題是那個時候是外面是根本沒有人的我就把影片放大再看多一次我是看到那個影子是真的很奇怪因為那個窗口是有鐵花然後有蚊子所以不可能是毛可以透過那個窗口爬進去那個物質裡面的所以到底這個是人還是動物還是起的東西我也不知道CTV到底拍了什麼這個是真人真事可是我就不能Share那個Customer Video出來所以如果你真的也有遇過這種怪事不妨留言分享給我們", "brk": "Hook类型: 悬念与灵异好奇\n结构: 抛出灵异疑问 → 讲述客户真实经历 → 留下悬念引导互动\n为什么火: 利用“CCTV拍到灵异”的冷门恐怖话题，结合真实从业经历，极易引发好奇与评论互动。\n改编角度: 结合CCTV或Alarm，讲述“深夜监控拍到诡异黑影最后发现是小偷”的反转故事，制造惊悚后回归安防主题。", "my": "🎉安抚 or 更换 CCTV + Auto Gate 大促销 !\n高价回收您的旧系统\n\n🤔切记 !在安装 CCTV & Auto Gate 时, 除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 :\n👉🏻售后服务 👈🏻\n\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n\n🎊 INNO 成立于 2003年 拥有10组经验丰富的专业团队.\n为您提供 :\n🤩最新产品的资讯\n🤩最专业的安裝\n🤩最快的售后服务\n\n已超过 3000 名用户选择了 INNO, 您呢?\n欢迎点击以下链接, 联络我们客服专员了解更多 :\nWhatassp: wa.me/60127163858", "tags": "", "bait": false, "type": "Video", "likes": 1678, "comments": 82, "er": 232.5, "followers": 757, "date": "2026-11-06", "url": "https://www.instagram.com/p/DfY_PviPRyt/", "video": true, "ratio": 0, "score": 254.16, "status": "未处理", "x": 20.5}, {"id": "DfJ6BjrvUxH", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "taiguan85", "caption": "酒店的尾房-诡异", "transcript": "今天酒店發生一個很古意的事情我和員工發現很多客戶竊盯了我們酒店最遠的房間不到兩個小時就要求換房我們就很好奇就對房間做調查發現到房間的洗手間床墊、電視都有問題房間也沒有味道所以我們就很無脈不知道為什麼客戶不喜歡這間房間剛巧我們這幾天我們在阿波達看到客戶給我們酒店淋鹽說不要住在酒店最遠的一間房間就趕緊私下聯繫客戶想了解情況是不是酒店房間有問題還是員工服務有問題偷客戶只回覆一句因為酒店最遠的房間Wi-Fi不好酒店老闆假如你遇到同樣的問題請聯繫我我把你解決這些問題讓你的酒店爆滿", "brk": "Hook类型: 痛点直击\n结构: 发现诡异现象 → 调查原因 → 揭晓反转真相\n为什么火: 利用恐怖悬念开头吸引好奇，结尾反转落脚于Wi-Fi信号差的痛点，极具戏剧性。\n改编角度: 拍摄门禁常故障或自动门深夜自动开启的悬疑视频，最后揭秘是没装太阳能备用电源。", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n刚刚交屋的屋主最常遇到一个让人头痛的状况。\n很多屋主以为只要随便找一家便宜的安防公司。\n把闭路电视跟电动门装上去就没事了。\n其实不是这样。\n你真正需要考虑的是产品装好之后的售后服务。\n当产品发生故障时能不能马上找到人来维修。\n是不是需要三催四请，过了几天才姗姗来迟。\nINNO 成立于 2003 年，拥有 10 组经验丰富的专业团队。\n第一，我们提供最新产品的资讯。\n不管是 AI 智能监控还是各种先进的电动门系统。\n我们都会根据您的预算和实际需求来做规划。\n绝对不会胡乱推荐昂贵又不需要的设备。\n第二，我们提供最专业的安装。\n我们的安装师傅都是经验丰富的老手。\n走线美观、设备稳固，确保系统长期稳定运作。\n不会让你装好不久就出现各种奇奇怪怪的问题。\n第三，我们提供最快的售后服务。\n工作日 8 小时内回复客户的咨询跟需求。\n让你遇到系统故障时不用苦苦等待。\n以前很多屋主为了省一点小钱找了不专业的安装工人。\n结果闭路电视关键时刻拍不清楚，电动门经常卡住故障。\n找原先的师傅又联络不上，最后只能花两笔钱重新处理。\n现在你可以直接点击我们主页的链接。\n联络我们的客服专员了解最新的产品资讯。\n已超过 3000 名用户选择了 INNO，您呢?", "tags": "", "bait": false, "type": "Video", "likes": 188, "comments": 6, "er": 25.63, "followers": 757, "date": "2026-10-31", "url": "https://www.instagram.com/p/DfJ6BjrvUxH/", "video": true, "ratio": 0, "score": 27.21, "status": "未处理", "x": 2.2}, {"id": "DfOZiCIPufk", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "taiguan85", "caption": "在家不要装CCTV -隐私", "transcript": "我後悔再假裝實體TV查到我今天晚上太自慰了我看我今天晚上不要把車扒進裡面扒外面不要吵到老婆睡覺冰箱你會明白漲你會明白你會明白字幕by索兰娅", "brk": "Hook类型: 反常识\n结构: 语出惊人劝告 → 荒诞隐私借口 → 幽默反转结尾\n为什么火: 用反常识的“劝告”和私密幽默迅速抓取眼球，引发好奇\n改编角度: 从“CCTV侵犯隐私”反向切入，幽默展示私密空间外如何用安防保护家庭", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n在家不要装 CCTV 吗 ?\n很多人以为\n装了闭路电视就会完全没有隐私\n整天担心自己的生活被看光光\n其实不是\n选择对的安装位置跟规划\n才是真正保护隐私的关键\n🤔切记 !在安装 CCTV & Auto Gate 时,除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 :\n👉🏻售后服务 👈🏻\n😭当产品发生故障时,会不会来维修 ?\n😤需要三催四请,过了几天才姗姗来迟 ?\n🎊 INNO 成立于 2003年 拥有10组经验丰富的专业团队.\n为您提供 :\n🤩最新产品的资讯\n🤩最专业的安裝\n🤩最快的售后服务\n🤝这些都是 INNO 给于您的承诺 !\n点击以下链接,联络我们客服专员了解更多详情\nWhatassp: wa.me/60127163858\n已超过 3000 名用户选择了 INNO,您呢?", "tags": "", "bait": false, "type": "Video", "likes": 146, "comments": 1, "er": 19.42, "followers": 757, "date": "2026-11-02", "url": "https://www.instagram.com/p/DfOZiCIPufk/", "video": true, "ratio": 0, "score": 19.68, "status": "未处理", "x": 1.6}, {"id": "DfHSDO1PR0U", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "taiguan85", "caption": "Jeff Leong的Personel Influence 值不值得？#brandwarriors #jeffleong16", "transcript": "值不值得上了几天健康老师的课程我第一个最大的感想和改变就是应该我终于会玩Instagram和剪视频了讲真的我以前是不玩Instagram或者是剪视频的没有想到上了几天老师的课程在给bit之下和各bit的同学学习我终于学会了所以我发现到学习真的是不凡年龄你只要肯学肯问这样你就一定学到了而第二个改变就是我从不敢排到面对镜头以前我一直很想拍视频但总是觉得自己很有准备好结果在课程上还被Jerros嘛点心了我是说你花了钱来上课却了那么多却又不要开始等你回到家又故意开始了所以这句话真的点心了我我们不是要等到完美才开始而是最主要开始了才能一步一步改进才能慢慢接近我们如果我一直在等我自己准备好可能一年后我还是停留在原地Jerros的课程不只是适合处学者他还一步一步教我们怎么去找理财啊怎么去拍摄啊怎么去找故事啊怎么去拍更有温度啊或者是更能够打动人心的视频以前我总是觉得我们要有好的器材啊要有好的环境啊要有好的剪接技术啊才可以开始拍视频这些东西不是等我们准备好老才去做的而是我们做了才会越来越熟悉所以我要感谢Jerros还有这几天跟我一起学习的同学我们不再找这口先拍 先发布再慢慢改进加油", "brk": "Hook类型: 痛点直击\n结构: 痛点引入(不会拍) → 导师点醒(先做再完美) → 收获感悟(先发再改)\n为什么火: 直击小白不敢出镜的心理，强调“先开始再完美”，引发强烈的行动共鸣。\n改编角度: 拍CCTV或Autogate安装现场，直击业主怕麻烦痛点，强调“安防要趁早，安全不等待”。", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 ! 😘高价回收您的旧系统...\n欢迎观看最新产品资讯 : https://innotechcctv.com/product/\n点击以下链接, 联络我们客服专员 :\nWhatassp: wa.me/60127163858\n\n🤔切记 !在安装 CCTV & Auto Gate 时, 除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 : 👉🏻售后服务 👈🏻\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n\n以前我总觉得找安防系统只要看便宜就好, 觉得随便找一家能开机能用就行了, 没有想到当家里发生状况需要查看时, 才发现找不到人来处理.\n上了这几年的行业课和跟团队交流后, 我终于明白安防不能只看当下的价格.\n我发现到安防系统真的是一分钱一分货, 您只要找对专业的团队, 这样您才真的用得安心.\n\n第二个改变就是我从不敢随便找供应商, 以前我一直很担心装了之后找不到人维修, 结果在了解了 INNO 团队嘛点醒了.\n我是说您花了钱装系统, 却总是担心这担心那, 却又没有去了解对方的背景.\n所以这句话真的点醒了我, 我们不是要等到机器坏了才来找人, 而是最主要选对有经验的团队, 才能一步一步用得长久, 才能慢慢安心.\n\n如果我一直在等随便一间便宜的店来装, 可能一年后我还要重新换过整套系统.\nINNO 的团队不只是适合住家和店铺, 他们还一步一步帮我们规划怎么去选 CCTV 啊, 怎么去装 Auto Gate 啊, 怎么去安排适合的方案啊, 或者是更能够配合我们的安全需求的系统.\n以前我总是觉得我们要有好的运气啊, 要有便宜的价钱啊, 要有随便找的师傅才可以安装.\n这些东西不是等我们遇到问题才去解决的, 而是我们找对了团队才会越来越放心.\n\n🎊 INNO 成立于 2003年 拥有10组经验丰富的专业团队.\n为您提供 :\n🤩最新产品的资讯\n🤩最专业的安裝\n🤩最快的售后服务\n🤝这些都是 INNO 给于您的承诺 !\n💪🏻 INNO 没有最好, 只有更好 !\n\n关于 INNO 公司资讯 :\nhttps://innotechcctv.com/inno/\nProject References :\nhttps://innotechcctv.com/cus-list/\n\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "brandwarriors, jeffleong16", "bait": false, "type": "Video", "likes": 82, "comments": 8, "er": 11.89, "followers": 757, "date": "2026-10-30", "url": "https://www.instagram.com/p/DfHSDO1PR0U/", "video": true, "ratio": 0, "score": 14.0, "status": "未处理", "x": 1.1}, {"id": "Dfec3c9v48_", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "taiguan85", "caption": "你的CCTV安全吗？\n\n#networkhouse \n#taiguan85", "transcript": "你的CTV安全嘛最近馬來西亞成為網絡紅技目標很多TVBOX也成為目標了那我們要怎麼選一個安全的CTV呢第一一定要選擇大品牌的CTV因為他們有自己的server自己的apps自己的技術人員甚至差不多每個國家都有他們的分公司因為很多網購的便宜的CTV都是我一樣的不是自己的apps也不是自己的server連一個MCMC認真也沒有我們也不知道啊這是apps啊在你的電話還有什麼其他的功能最怕不是你在監控是他一直在監控你第二你購買的渠道我適合有一個customer他是在神社買了一套大品牌的CTV他說便宜一半哦我就他就安排我幫他做外令和安裝可是當我幫他scan queue進他電話時我就看到那個apps很奇怪原來他買到了反版的CTV還有一次是customer在網上買CTV是oem的CTV了通常oem的賀裝啊他是沒有品牌或者是那個牌子啊品牌啊是你們很少看到在店裡賣的他什麼跟我講他賺了那個CTV一路來都沒有問題可是富蘭間他自己在跟工作的時候富蘭間那個cTV會跟他笑會有笑聲然後會講話會罵他所以他就知道這個cTV是給人家HECK了最後廢話啦一定要給我買我們店裡有幾個大品牌幾十種moder有wifi啦有4G啊有雙頭啊有sola有battery的最重要全部都是MCMC認真的關注我下次我再跟大家分享cTV的指示", "brk": "Hook类型: 痛点直击\n结构: 抛出CCTV安全隐患 → 举例山寨/盗版恐怖经历 → 引出专业选品与自家产品\n为什么火: 揭秘监控反向偷窥的恐怖灵异事件，精准踩中消费者对隐私泄露的恐惧\n改编角度: 强调CCTV、Autogate或Access Control被黑客入侵的真实案例，主打MCMC认证与专业售后保平安", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n🤔切记 !在安装 CCTV & Auto Gate 时, 除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 :\n👉🏻售后服务 👈🏻\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n\n很多屋主以为随便买个便宜的 CCTV 就好,\n只要能看到画面就可以,\n其实没有考虑到系统的安全性和服务器的稳定性,\n买到没有保障的设备反而带来隐患.\n\nINNO 成立于 2003年 拥有10组经验丰富的专业团队.\n为您提供 :\n🤩最新产品的资讯\n🤩最专业的安裝\n🤩最快的售后服务\n\n我们有各种适合住家和店铺的智能监控方案,\n从 WiFi 到 4G 型号都有,\n全部经过专业评估和配置,\n确保日常使用稳定可靠,\n后期遇到问题也有专人跟进处理.\n\n已超过 3000 名用户选择了 INNO, 您呢?\n\n欢迎观看最新产品资讯 : https://innotechcctv.com/product/\n点击以下链接, 联络我们客服专员了解更多 :\nWhatassp: wa.me/60127163858", "tags": "networkhouse, taiguan85", "bait": false, "type": "Video", "likes": 82, "comments": 0, "er": 10.83, "followers": 757, "date": "2026-11-08", "url": "https://www.instagram.com/p/Dfec3c9v48_/", "video": true, "ratio": 0, "score": 10.83, "status": "未处理", "x": 0.9}, {"id": "DfR0HSuv4hU", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "taiguan85", "caption": "你不还钱，我给你红！", "transcript": "我現在要過去一個顧客的店跟他收錢六個月老他都別還我CTV的錢了假如他今天不還錢我就把他的店Hot上去Facebook老闆現在你我就是老闆 這樣大聲說嗎不是 老闆我是想問一下那天的CCTV有什麼問題這樣大聲說嗎 嚇死我不要講什麼我剛才看我的電話那個CTV你不要看小孩 這樣小個那影片的品質真的很輕一下的其實這個EpicTen也是滿不錯的價錢也公道 手工也是美只是老闆看起來比較兇了謝謝你老闆這樣沒有問題的話 我走先對了還是抽不到錢老闆 有env imperial從聶指導給我沒關係 我再去找工作人員", "brk": "Hook类型: 反转喜剧/痛点直击\n结构: 讨债凶狠上门 → 戏剧性反转夸CCTV画质 → 顺势推销产品与幽默结尾\n为什么火: 利用“讨债”制造紧张悬念，反转变成产品好用和搞笑互动，接地气有网感。\n改编角度: 拍上门维护CCTV或Autogate假装客诉，实则客户大赞产品好用，带出安防系统实力。", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n已超过 3000 名用户选择了 INNO , 您呢 ?\n🤔切记 !在安装 CCTV & Auto Gate 时 , 除了需考虑产品的功能与价格...\n( 一分钱 , 一分货 . 谁要做亏本的生意 ？)\n您更需要考虑的是 : 👉🏻售后服务 👈🏻\n😭当产品发生故障时 , 会不会来维修 ?\n😤需要三催四请 , 过了几天才姗姗来迟 ?\n🎊 INNO 成立于 2003年 , 拥有 10 组经验丰富的专业团队 .\n为您提供 :\n🤩最新产品的资讯\n🤩最专业的安裝\n🤩最快的售后服务\n🤝这些都是 INNO 给于您的承诺 !\n💪🏻 INNO 没有最好 , 只有更好 !\n点击以下链接 , 联络我们客服专员了解更多详情 :\nWhatassp: wa.me/60127163858", "tags": "", "bait": false, "type": "Video", "likes": 59, "comments": 0, "er": 7.79, "followers": 757, "date": "2026-11-03", "url": "https://www.instagram.com/p/DfR0HSuv4hU/", "video": true, "ratio": 0, "score": 7.79, "status": "未处理", "x": 0.6}, {"id": "De5yNezPT-w", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "taiguan85", "caption": "#jeffleong #brandwarriors", "transcript": "", "brk": "", "my": "", "tags": "jeffleong, brandwarriors", "bait": false, "type": "Video", "likes": 22, "comments": 2, "er": 3.17, "followers": 757, "date": "2026-10-25", "url": "https://www.instagram.com/p/De5yNezPT-w/", "video": true, "ratio": 0, "score": 3.7, "status": "未处理", "x": 0.3}, {"id": "De8pCTLPOm7", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "taiguan85", "caption": "", "transcript": "這幾天我在KL上的傑斌老師的IP influence課程很多人問我我做了生意那麼久為什麼還要去做這個%的IP呢其實是有幾個原因第一是我生意遇到瓶頸我這幾年的生意沒有很大的出破為了找更多新的顧客我都是砸錢打廣告就是打Facebook的廣告第二就是我的孩子我的孩子們都認識誰是Jeff Leung所以我相信現在年輕一代的年輕人都是不會接觸到報紙的廣告甚至電視的廣告他們會接觸更多我把網上的資訊就是YouTube、Facebook、Instagram或者是小紅書所以我覺得做%的IP可以吸引到這班年輕的客戶第三的原因是要挑戰自己我本身是不玩IP的這頭髮是在鏡頭前那個海拔視頻的可是我相信我不能一直在conference中我就不會突破我的自己更好關突破我的生意下一次我再跟大家分享我上了Jeff Leung的課程的感想", "brk": "Hook类型: 痛点直击\n结构: 交代学习背景 → 剖析生意与家庭三大痛点 → 表达自我突破决心\n为什么火: 真诚分享传统老板转型做IP的真实心境，引发同频老板共鸣\n改编角度: 结合安防与太阳能老板视角，讲述传统工程行如何靠个人IP打破获客瓶颈", "my": "🎉 安装或更换 CCTV 加 Auto Gate 大促销\n\n🤔 切记 !在安装安防系统时\n除了需考虑产品的功能与价格\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 :\n👉🏻 售后服务 👈🏻\n😭 当产品发生故障时, 会不会来维修 ?\n😤 需要三催四请, 过了几天才姗姗来迟 ?\n\n這幾天很多来店里看货的店主都在问\n为什么我们做生意那么久了\n还要一直在网上分享店铺的安防配置呢\n其实是有几个原因的\n\n第一是我发现很多同行遇到瓶颈\n这几年的生意没有很大的突破\n为了找更多新的顾客\n大家都是砸钱打广告\n就是打 Facebook 的广告\n可是只看广告是不够的\n\n第二是现在的年轻人\n我的孩子甚至年轻一代的员工\n都是不会接触到传统的广告\n他们会接触更多的网络资讯\n就是 YouTube、Facebook、Instagram 或者是网页\n所以我觉得在网上展示专业的安装\n可以吸引到这班注重安全的年轻业主\n\n第三的原因是要挑战自己\n我本身是不常面对镜头拍视频的\n可是我相信不能一直留在舒适圈里\n就无法突破自己\n也无法让更多人认识我们的专业\n\nINNO 成立于 2003 年\n拥有 10 组经验丰富的专业团队\n为您提供 :\n🤩 最新产品的资讯\n🤩 最专业的安裝\n🤩 最快的售后服务\n工作日 8 小时内回复客户\n这些都是 INNO 给于您的承诺\n\n已超过 3000 名用户选择了 INNO, 您呢?\n\n点击以下链接, 联络我们客服专员了解最新产品资讯\nWhatassp: wa.me/60127163858\nINNO 没有最好, 只有更好 !", "tags": "", "bait": false, "type": "Video", "likes": 25, "comments": 0, "er": 3.3, "followers": 757, "date": "2026-10-26", "url": "https://www.instagram.com/p/De8pCTLPOm7/", "video": true, "ratio": 0, "score": 3.3, "status": "未处理", "x": 0.3}, {"id": "Dex4AdzjWZU", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "solarvestgroup", "caption": "Employee Series | Cassimir Lau, Senior Business Development Executive ☀️\n\nHelping businesses make confident energy decisions starts with understanding their needs.\n\nMeet Cassimir, who works closely with clients to understand their energy challenges and recommend solutions that help reduce operating costs and support a more sustainable future.\n\nCommunication goes beyond explaining a solution. It is about making complex information clear, and helping clients see how solar can work for their business.\n\nAt Solarvest, our people turn expertise and collaboration into meaningful progress.\n\nPowered by People. Energising The Next.\n\n#Solarvest #EnergisingTheNext #EmployeeSeries", "transcript": "Hi everyone, my name is Kasmeel Lau, Senior Business Development Executive at SolarVest. Every day starts the same way, coffee, emails, and then it's game on. My friends would probably say I'm curious, easygoing, and a thin mistake. My role involves working closely with businesses to understand their energy needs and recommend the right energy solutions. It's all about helping clients reduce operating costs for supporting a more sustainable future. Communication is the one skill you can't do without. It's about understanding a pain point and translating it into the right solution. There was a client who wasn't sure if Solar was the right solution for their business. We carefully revealed their data, explained the solutions step by step, and helped them see its value. In the end, they felt confident enough to move forward with the project. No one runs this alone, everyone's got their own specialty, and when someone's stuck, there's always a teammate ready to jump in to support. Outside of work, I'm a huge Motorsports fan. I have been following Formula 1 since 1997. I like to tinker with the limited tools I have on my car, with the best part being driving it. Solar isn't just about green energy anymore. As technologies continue to advance, it's becoming a powerful tool to help businesses improve energy efficiency while creating a more sustainable future. That's the kind of impact I'm proud to be proud of.", "brk": "Hook类型: 身份共鸣\n结构: 自我介绍 → 日常工作 → 客户案例 → 个人爱好 → 行业愿景\n为什么火: 通过员工真实日常与真实案例建立信任，塑造专业且接地气的品牌形象\n改编角度: 邀请CCTV或AutoGate技术人员出镜，分享解决客户安防痛点的真实故事与个人爱好", "my": "🎉免费评估安装太阳能系统 !!\n🤩为您量身打造最适合的太阳能方案 !!\n\n🤔切记 !在安装太阳能系统时,除了需考虑产品的功能与价格...\n(一分钱,一分货.谁要做亏本的生意？)\n您更需要考虑的是 :\n👉🏻售后服务  👈🏻\n😭当产品发生故障时,会不会来维修 ?\n😤需要三催四请,过了几天才姗姗来迟 ?\n\n很多老板以为,装太阳能一定要花一大笔钱,或者要懂很复杂的电力技术.\n其实不是这样的,关键在于先了解自己的用电需求和屋顶条件.\n\n今天分享三个很多商业老板在做的方法.\n第一点,先看每个月的电费账单.\n了解自己的用电高峰期在什么时候.\n这样才能配置最合适的系统容量.\n第二点,评估屋顶的实际条件.\n看看有没有被遮挡,面积够不够大.\n做好前期规划,才能发挥最好的省电效果.\n第三点,选择有经验的专业团队.\n从前期咨询到安装和后续维护都有人负责.\n这样才能让系统长期稳定运作.\n\n商店和工厂通常在三到四年回本,之后每度电几乎免费.\n住家则通常在五到六年回本,视电费和屋顶条件而定.\n现在有银行百分之百贷款支持,无需一次过大笔支出.\n\n以前很多老板想装太阳能,但不知道从哪里开始,也不知道找谁配合.\n现在只要找对有经验的团队,就能根据用电需求量身规划.\n\n点击以下链接,联络我们客服专员了解配套或预约 :\nWhatassp: wa.me/60127163858\n获取免费的太阳能评估与专业建议.\n\n已超过 3000 名用户选择了 INNO,您呢?", "tags": "Solarvest, EnergisingTheNext, EmployeeSeries", "bait": false, "type": "Video", "likes": 96, "comments": 7, "er": 1.85, "followers": 5556, "date": "2026-10-22", "url": "https://www.instagram.com/p/Dex4AdzjWZU/", "video": true, "ratio": 0, "score": 2.11, "status": "未处理", "x": 2.0}, {"id": "DdnVZTIkQOt", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "solarvestgroup", "caption": "Employee Series | Zafirah, Senior Sustainability Executive II 🌱\n \nBehind every sustainability initiative are people who help turn goals into meaningful action.\n\nMeet Zafirah, who works to connect sustainability goals with business objectives, helping drive meaningful impact for both the environment and the business.\n \nHer role is about finding the right balance between people, business, and nature, while supporting Solarvest’s sustainability efforts.\n \nAt Solarvest, our people are at the heart of accelerating the transition towards a more sustainable energy future.\n\nPowered by People. Energising The Next.\n\n#Solarvest #EnergisingTheNext #Sustainability", "transcript": "Hai, saya Zafira, penyelamatkan penyelamatkan penyelamatkan di SolarVest. Jika anda tanya kawan saya untuk berkata-kata saya, saya mungkin akan berkata, saya adalah penyelamatkan penyelamatkan dan seseorang yang sangat penyelamatkan tentang apa yang saya lakukan. Kejutan dan kejutan itu adalah apa yang menyebabkan saya dan jenis saya menjadi penyelamatkan. Dalam rancangan saya, saya membantu mengalami penyelamatkan penyelamatkan dengan mengalami kawasan perniagaan kita dengan perniagaan perniagaan dan menjaga kejutan dan kejutan di seluruh projek kami. Rancangan teknikal membutuhkan kawasan kuat di kawasan kawasan, kawasan kawasan, dan analiskan data keperluan untuk mengubah informasi ke dalam kawasan yang menarik. Kami berkata-kata bahawa projek ini bukan hanya panggilan, ini adalah kemimpan yang kami tinggal di belakang. Tiada apa-apa yang berlaku seorang saja. Berdiri setiap berkata-kata adalah sebuah kawan yang belajar dan menyelamatkan seorang. Dalam kerja di luar, saya menghantar masa untuk menjaga kejutan. Saya menikmati perjalanan, berjalan-jalan dan menggantikan dengan organisasi penyelamat. Ia mengingatkan kenapa kerja ini berlaku. Untuk saya, kemampuan maksud saya menjaga kejutan untuk perniagaan, komuniti dan masa depan. Di satu perkara, ia adalah perbalas antara dunia, orang dan kejutan.", "brk": "Hook类型: 身份共鸣\n结构: 自我介绍 → 岗位日常与技术挑战 → 个人愿景与企业使命\n为什么火: 通过真实员工的第一视角展现企业温度，树立专业且有责任感的品牌形象。\n改编角度: 拍摄CCTV或Autogate技术人员的一天，展现幕后安装与维护如何保障客户安全。", "my": "🎉安装 or 更換 CCTV + Auto Gate 大促销 !\n\n🤔切记 ! 在安装 CCTV 和 Auto Gate 时, 很多人以为只要挑最便宜的买就好。\n\n其实真正要注意的是, 便宜的设备装好之后, 往往找不到人来维修。\n\n您更需要考虑的是售后服务, 还有团队够不够专业。\n\n第一, 了解产品资讯很重要。\n您可以先上我们的官网查看最新型号。\n看看这些设备是不是符合您的实际需求。\n选对了产品, 日后使用才不会经常出问题。\n\n第二, 专业的安装团队是关键。\n我们拥有超过十年经验的安装师傅上门施工。\n施工过程规范仔细, 不会随便乱拉电线。\n装好后还会帮您测试到顺畅才离开。\n\n第三, 快速的售后服务才是保障。\n当产品发生故障时, 最怕找不到人处理。\n我们有专人负责跟进您的报修需求。\n工作日八小时内就会给您回复。\n\n已超过 3000 名用户选择了 INNO, 您呢?\n\n以前很多屋主随便找外面便宜的师傅安装。\n结果系统坏了打给对方却一直借故拖延。\n现在找我们不仅有专业团队负责安装。\n后续有任何技术问题都能马上找到人协助。\n\n点击以下链接联络我们的客服专员了解更多。\n让我们的专业团队为您提供最合适的安防方案。\n\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "Solarvest, EnergisingTheNext, Sustainability", "bait": false, "type": "Video", "likes": 90, "comments": 7, "er": 1.75, "followers": 5556, "date": "2026-09-23", "url": "https://www.instagram.com/p/DdnVZTIkQOt/", "video": true, "ratio": 0, "score": 2.0, "status": "未处理", "x": 1.9}, {"id": "DeOrzn0FKP-", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "solarvestgroup", "caption": "Solarvest CSR Ocean Care 2026 🌊\n\nA Shared Commitment to Marine Conservation.\n\nAt Redang Island, our Solarvees volunteers came together for clean-ups and conservation efforts to help protect our oceans. Hear from our Solarvees as they share their experiences and what they learned about protecting marine life. 💙\n\nWith thanks to Universiti Malaysia Terengganu's Sea Turtle Research Unit (SEATRU), Higher Institution Centre of Excellence (HiCOE), Institute of Tropical Aquaculture and Fisheries (AKUATROP), Tidal Wave Conservation Management, local community members and the diving community who stood alongside us.\n\n#Solarvest #WorldSustainabilityDay #SolarvestPlanet", "transcript": "Kami mempunyai pilihan yang cantik untuk menjadi pilihan konservasi dikenal. Kerana kami ingin mempunyai orang yang sendiri untuk menjelaskan dengan kawasan mereka bahawa pilihan yang cantik adalah kecewaan kita. CSR program adalah program yang sangat menarik untuk kami. Jadi, sebenarnya, ia adalah doktor dari satu kultur solaves kita. Maksud kami dari kawasan keperluan kami yang terdapat lebih daripada lima. Seperti yang kami lakukan hari ini. Mereka mengalami, mereka mengalami, mereka mengalami, mereka mengalami, mereka mengalami, dan mereka cuba sesuatu yang baru, sesuatu yang sangat menarik. Kita berhenti dengan mereka di cara yang sangat menarik juga. Sustannabiliti di SolarVest bukan hanya tentang perjalanan energi yang terdapat. Ia juga berhenti kembali ke pekerjaan kita. Pilihan, orang dan progres bergantung dan bergantung untuk menjelaskan perjalanan kita. Saya harap orang dapat melihat kecewaan. Ia bukan hanya tentang menguruskan kawasan kawasan. Ia juga tentang menjelaskan apa yang kita bergantung pada. Lem aisle ini untuk wok Definitely Tak Apabiliti Tfree.", "brk": "Hook类型: 身份共鸣\n结构: 活动现场画面 → 志愿者分享感悟 → 企业价值观升华\n为什么火: 结合环保公益展现企业社会责任，树立有温度的品牌形象\n改编角度: 结合安防或太阳能业务，展示团队参与社区公益或客户回访的幕后花絮", "my": "已超过 3000 名用户选择了 INNO，您呢?\n\n🤔 切记 !在安装 太阳能系统 时, 除了需考虑产品的功能与价格...\n\n( 一分钱, 一分货. 谁要做亏本的生意？)\n\n您更需要考虑的是 : 售后服务\n\n😭 当产品发生故障时, 会不会来维修 ?\n\n😤 需要三催四请, 过了几天才姗姗来迟 ?\n\n🎉 免费评估安装太阳能系统 !!\n\n🤩 为您 量身打造最适合的太阳能方案 !!\n\n☀ 【屋顶不只是遮雨，还能帮您省电！】\n\n现在安装太阳能系统，政府有政策、银行有贷款支持.\n\n🏬 商店,工厂 ：3-4年回本，之后每度电几乎\"免费\" ⚡！视电费和屋顶条件而定。\n\n🏠 住家：5-6年回本，之后每度电几乎\"免费\" ⚡！视电费和屋顶条件而定。\n\n✅ 银行100%贷款，无需一次过大笔支出\n\n✅ 居銮首家太阳能公司，经验丰富值得信赖！\n\n🎊 INNO 成立于 2003年 拥有10组经验丰富的专业团队.\n\n为您提供 :\n\n🤩 最新产品的资讯\n\n🤩 最专业的安裝\n\n🤩 最快的售后服务\n\n🤝 这些都是 INNO 给于您的承诺 !\n\n💪🏻 INNO 没有最好, 只有更好 !\n\n欢迎观看最新产品资讯 : https://innotechcctv.com/solar-energy/\n\n点击以下链接, 联络我们客服专员了解配套或预约\n\nWhatassp: wa.me/60127163858", "tags": "Solarvest, WorldSustainabilityDay, SolarvestPlanet", "bait": false, "type": "Video", "likes": 102, "comments": 2, "er": 1.87, "followers": 5556, "date": "2026-10-08", "url": "https://www.instagram.com/p/DeOrzn0FKP-/", "video": true, "ratio": 0, "score": 1.94, "status": "未处理", "x": 1.8}, {"id": "DeGq1JEgctO", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "solarvestgroup", "caption": "Advancing Malaysia’s energy future, together.\n \nOur Chief Investment Officer, Daniel Ruppert, represented Solarvest as a panellist at Youth Economic Forum 2026, held at the Kuala Lumpur Convention Centre.\n \nDuring the panel “Fifty Shades of Green Energy: Redesigning the Nation’s Power Mix for the Next Decade”, discussions explored how Malaysia can build a cleaner, more resilient power system while balancing energy security, affordability and sustainability.\n \nThe session examined the role of a diversified energy mix, battery storage, grid flexibility and energy efficiency in meeting growing electricity demand and strengthening the nation’s long-term competitiveness.\n \nA valuable platform to exchange industry perspectives and strengthen collaboration towards a more sustainable energy future.\n \n#Solarvest #EnergisingTheNext #YouthEconomicForum2026", "transcript": "", "brk": "Hook类型: 身份共鸣\n结构: 高管背书 → 行业愿景 → 协同合作\n为什么火: 依托权威论坛高管发言提升品牌公信力与行业领导力。\n改编角度: 结合CCTV或太阳能业务，展示专家团队参与大型基建安防或绿色能源峰会的专业背书。", "my": "🎉 免费评估安装太阳能系统 !!\n商店工厂电费一个月那么高, 难道只能一直这样缴下去吗 ?\n🤔切记 !在安装太阳能系统时, 除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 :\n👉🏻售后服务  👈🏻\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n现在安装太阳能系统, 政府有政策, 银行有贷款支持.\n🏬 商店工厂 : 3-4年回本, 视电费和屋顶条件而定, 之后每度电几乎免费 !\n🏠 住家 : 5-6年回本, 视电费和屋顶条件而定, 之后每度电几乎免费 !\n✅ 银行100%贷款, 无需一次过大笔支出\n✅ 居銮首家太阳能公司, 经验丰富值得信赖！\n🎊 INNO 成立于 2003年 拥有10组经验丰富的专业团队.\n为您提供 :\n🤩最新产品的资讯\n🤩最专业的安裝\n🤩最快的售后服务\n点击以下链接, 联络我们客服专员了解配套或预约 :\nWhatassp: wa.me/60127163858\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "Solarvest, EnergisingTheNext, YouthEconomicForum2026", "bait": false, "type": "Carousel", "likes": 83, "comments": 0, "er": 1.49, "followers": 5556, "date": "2026-10-05", "url": "https://www.instagram.com/p/DeGq1JEgctO/", "video": false, "ratio": 0, "score": 1.49, "status": "未处理", "x": 1.4}, {"id": "DdS5YE8Cois", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "solarvestgroup", "caption": "Malaysia, powered by Planet, People and Progress. 🇲🇾\n \nOur future is shaped by the choices we make today how we care for our environment, uplift one another and create opportunities for generations to come.\n \nThis Malaysia Day, we celebrate the spirit of unity that turns our shared hopes into meaningful progress.\n \nTogether, let’s power a brighter, more sustainable future for the place we call home.\n \nSelamat Hari Malaysia from all of us at Solarvest.\n \n#Solarvest #EnergisingTheNext #MalaysiaDay #PlanetPeopleProgress", "transcript": "", "brk": "Hook类型: 身份共鸣\n结构: 节日情怀引发共鸣 → 展示绿色愿景与行动 → 号召共同建设未来\n为什么火: 结合马来西亚日借势营销，用可持续发展愿景激发华人企业家的家国情怀。\n改编角度: 结合马来西亚日或国庆，强调安防与太阳能系统守护大马家园的安全与绿色未来。", "my": "🎉 免费评估安装太阳能系统 !!\n🤩 为您量身打造最适合的太阳能方案 !!\n\n🤔 切记 !在安装太阳能系统时,除了需考虑产品的功能与价格...\n( 一分钱,一分货.谁要做亏本的生意？)\n您更需要考虑的是 :\n👉🏻 售后服务 👈🏻\n😭 当产品发生故障时,会不会来维修 ?\n😤 需要三催四请,过了几天才姗姗来迟 ?\n\n☀【屋顶不只是遮雨，还能帮您省电！】\n现在安装太阳能系统，政府有政策、银行有贷款支持.\n🏬 商店,工厂 ：3-4年回本，视电费和屋顶条件而定，之后每度电几乎\"免费\" ⚡！\n🏠 住家：5-6年回本，视电费和屋顶条件而定，之后每度电几乎\"免费\" ⚡！\n✅ 银行100%贷款，无需一次过大笔支出\n✅ 居銮首家太阳能公司，经验丰富值得信赖！\n\n🎊 INNO 成立于 2003年 拥有10组经验丰富的专业团队.\n为您提供 :\n🤩 最新产品的资讯\n🤩 最专业的安裝\n🤩 最快的售后服务\n🤝 这些都是 INNO 给于您的承诺 !\n💪🏻 INNO 没有最好, 只有更好 !\n\n点击下方链接,联络我们客服专员了解配套或预约 :\nWhatassp: wa.me/60127163858\n\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "Solarvest, EnergisingTheNext, MalaysiaDay, PlanetPeopleProgress", "bait": false, "type": "Video", "likes": 49, "comments": 4, "er": 0.95, "followers": 5556, "date": "2026-09-15", "url": "https://www.instagram.com/p/DdS5YE8Cois/", "video": true, "ratio": 0, "score": 1.1, "status": "未处理", "x": 1.0}, {"id": "Dd6ErWokztI", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "solarvestgroup", "caption": "Sustainability begins with the actions we take today to protect the planet we share. Beyond clean energy, our commitment extends to preserving the ecosystems around us.\n \nRecently, 30 Solarvest volunteers came together at Redang Island for Solarvest Ocean Care 2026, participating in crown-of-thorns starfish removal, underwater and beach clean-ups, while learning more about turtle and clownfish conservation.\n \nThe initiative brought together Universiti Malaysia Terengganu’s Sea Turtle Research Unit (SEATRU), Higher Institution Centre of Excellence (HiCoE), Institute of Tropical Aquaculture and Fisheries (AKUATROP), Tidal Wave Conservation Management, local community members and the diving community, each playing a part in protecting Redang’s marine ecosystem.\n \nThank you to everyone who contributed their knowledge, time and effort. Every action today brings us closer to a more sustainable tomorrow. 💙🌏\n \n#Solarvest #CSR #Sustainability #WorldSustainabilityDay #SolarvestPlanet", "transcript": "", "brk": "Hook类型: 身份共鸣\n结构: 企业环保行动 → 团队海底清理 → 呼吁可持续未来\n为什么火: 展现企业社会责任与品牌温度，引发环保共鸣\n改编角度: 结合Solar PV与CCTV业务，展示绿色科技如何守护海洋生态", "my": "🎉 免费评估安装太阳能系统 !\n商店工厂安装太阳能系统，通常 3 到 4 年回本，之后每度电几乎免费，视电费和屋顶条件而定。\n很多人以为装太阳能就是花大钱买个心安。\n其实不是，屋顶不只是遮雨，还能帮您省电。\n🤔切记 !在安装太阳能系统时，除了需考虑产品的功能与价格...\n( 一分钱，一分货。谁要做亏本的生意？)\n您更需要考虑的是售后服务。\n😭当产品发生故障时，会不会来维修 ?\n😤需要三催四请，过了几天才姗姗来迟 ?\n我们有 10 组经验丰富的专业团队。\n为您提供最新产品的资讯，为您提供最专业的安装，为您提供最快的售后服务。\n现在安装太阳能系统，政府有政策、银行有贷款支持。\n银行可以 100% 贷款，您无需一次过大笔支出。\n我们作为居銮首家太阳能公司，经验丰富值得信赖。\n以前您可能觉得装太阳能很麻烦，又不知道找谁帮忙评估。\n现在只要联络我们，就能为您量身打造最适合的太阳能方案。\n点击下方链接，联络我们客服专员了解配套或预约。\n已超过 3000 名用户选择了 INNO，您呢?", "tags": "Solarvest, CSR, Sustainability, WorldSustainabilityDay, SolarvestPlanet", "bait": false, "type": "Carousel", "likes": 60, "comments": 0, "er": 1.08, "followers": 5556, "date": "2026-09-30", "url": "https://www.instagram.com/p/Dd6ErWokztI/", "video": false, "ratio": 0, "score": 1.08, "status": "未处理", "x": 1.0}, {"id": "DdbBBELCtps", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "solarvestgroup", "caption": "🎙️ Energy Pulse Ep 1 | Peak Shaving Explained\n\nWhat is Peak Shaving, and how can it help manage energy demand? ⚡\n\nIn our first episode of Energy Pulse, Duval, our Assistant Project Manager, breaks down Peak Shaving and how it helps businesses manage periods of high electricity demand.\n\nStay tuned as we explore more energy concepts in 30 seconds at a time!\n\n#Solarvest #EnergisingTheNext #EnergyPulse #PeakShaving", "transcript": "Terutamanya, menggantikan kelasan di dalam masa pinggan. Hai, saya Tugo, Projek Assistem Pembezaan di bawah PSS Team. Kamu tahu tentang kelasan? Jadi kelasan adalah menggantikan kelasan di dalam masa pinggan. Jadi ada beberapa cara untuk mengalami ini. Pertama, menginsulkan solar. Pertama, menghidupkan schedule operasi kamu. Dan kemudian, kelasan paling mudah dan paling jauh untuk menginsulkan sistem solar. Jadi kenapa ini berlaku? Dalam tarif T&B yang paling terlalu tinggi, kelasan yang terbesar sebenarnya membuat banyak perangkat elektrisi kamu. Jadi dengan menggantikan pinggan, sebenarnya kamu boleh menggantikan perangkat elektrisi kamu. Jadi berhati-hati untuk episode berikutnya.", "brk": "Hook类型: 知识科普/专业术语直击\n结构: 提出专业概念 → 解释省钱原理 → 给出解决方案与下集预告\n为什么火: 用30秒极简拆解企业电费痛点，专业背书建立信任\n改编角度: 结合CCTV/Autogate/Solar等业务，拍“30秒教你避开XX安全或电费漏洞”系列短视频", "my": "🎉 免费评估安装太阳能系统 !!\n🤔切记 !在安装太阳能系统时,除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 : 售后服务\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n☀屋顶不只是遮雨，还能帮您省电！\n现在安装太阳能系统，政府有政策、银行有贷款支持.\n商店工厂通常三到四年回本，住家通常五到六年回本，之后每度电几乎免费，视电费和屋顶条件而定.\n银行百分之百贷款，无需一次过大笔支出.\n我们是居銮首家太阳能公司，经验丰富值得信赖.\n🎊 INNO 成立于二零零三年，拥有十组经验丰富的专业团队.\n为您提供 :\n最新产品的资讯\n最专业的安裝\n最快的售后服务\n这些都是 INNO 给于您的承诺 !\nINNO 没有最好, 只有更好 !\n已超过三千名用户选择了 INNO, 您呢?\n点击下方链接，联络我们客服专员了解配套或预约.", "tags": "Solarvest, EnergisingTheNext, EnergyPulse, PeakShaving", "bait": false, "type": "Video", "likes": 40, "comments": 0, "er": 0.72, "followers": 5556, "date": "2026-09-18", "url": "https://www.instagram.com/p/DdbBBELCtps/", "video": true, "ratio": 0, "score": 0.72, "status": "未处理", "x": 0.7}, {"id": "DeMDrQnmDmc", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "solarvestgroup", "caption": "A proud milestone for Solarvest 🏆\n\nOur Chief Executive Officer of Business and Asset Management, Jack Tan receive the Asia-Pacific Clean Energy Leadership Award under the Green Leadership Empowerment Awards at the 5th Solar Energy Storage Future Malaysia 2026.\n\nThis recognition celebrates the collective efforts of our team and the trust of our customers and partners as we work together to advance the clean energy transition.\n\nAs we continue this journey, we remain committed to delivering reliable, integrated energy solutions that help businesses build a cleaner, more resilient future.\n\n#Solarvest #EnergisingTheNext #CleanEnergy", "transcript": "", "brk": "Hook类型: 权威背书\n结构: 获奖喜讯 → 团队感谢 → 业务愿景\n为什么火: 创始人获得亚太级大奖，极大地提升了品牌公信力与行业权威感。\n改编角度: 结合CCTV或Solar PV安装量突破，展示行业荣誉与客户信任以提升转化。", "my": "🎉 免费评估安装太阳能系统 !!\n商店和工厂装太阳能，到底几年可以回本？\n\n很多人以为，装太阳能系统是一笔很大的开销，普通店铺或者工厂根本负担不起。\n甚至觉得申请银行贷款很麻烦，干脆继续交高昂的电费。\n\n🤔切记 !在安装太阳能系统时,除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 : 售后服务\n\n😭当产品发生故障时,会不会来维修 ?\n😤需要三催四请,过了几天才姗姗来迟 ?\n\n其实，现在政府有政策、银行有贷款支持。\n商店和工厂一般 3 到 4 年回本，之后每度电几乎免费，视电费和屋顶条件而定。\n住家一般 5 到 6 年回本，之后每度电几乎免费，视电费和屋顶条件而定。\n银行 100% 贷款，无需一次过大笔支出，减轻您的资金压力。\n\n🎊INNO 成立于 2003 年，是居銮首家太阳能公司，拥有 10 组经验丰富的专业团队。\n为您提供 :\n🤩最新产品的资讯\n🤩最专业的安裝\n🤩最快的售后服务\n🤝这些都是 INNO 给于您的承诺 !\n\n以前，很多老板看着每个月几千块的电费心疼，却不知道屋顶其实不只是遮雨，还能帮您省电。\n现在，只要找对经验丰富的团队，从规划、申请贷款到安装，一步到位帮您搞定。\n\n点击下方链接，联络我们客服专员了解配套或预约。\n让专业团队为您量身打造最适合的太阳能方案。\n\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "Solarvest, EnergisingTheNext, CleanEnergy", "bait": false, "type": "Carousel", "likes": 37, "comments": 0, "er": 0.67, "followers": 5556, "date": "2026-10-07", "url": "https://www.instagram.com/p/DeMDrQnmDmc/", "video": false, "ratio": 0, "score": 0.67, "status": "未处理", "x": 0.6}, {"id": "Ddq1hCHDTEm", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "deluxmalaysia", "caption": "The same Grono trackless autogate can look completely different from one home to another — especially when day turns into night. Same signature design, different setting, different vibe. That’s the beauty of Grono.", "transcript": "오케이!", "brk": "Hook类型: 视觉对比\n结构: 引入产品 → 展示白天效果 → 切换夜晚氛围\n为什么火: 利用昼夜光影反差突显高端设计的质感与独特性\n改编角度: 展示同一款CCTV或Autogate在日夜不同场景下的智能守护与酷炫氛围", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n🤔切记 !在安装 CCTV & Auto Gate 时,除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 :\n👉🏻售后服务 👈🏻\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n同样的智能电动门系统装在不同的屋子, 往往展现完全不同的质感与风格.\n很多屋主以为, 只要选最便宜的款式装上就好, 外观和耐用度其实都差不多.\n其实不是,真正影响日常出入便利和门面档次的, 是系统设计的细节与整体配合.\n今天和您分享三个挑选与安装电动门和安防系统的方法.\n第一点, 先评估日常进出的频率与车辆负荷, 选对适合的摩多与轨道规格.\n这样才能确保系统长期运作顺畅, 不会常常卡住动弹不得.\n设备好还要安装稳固, 不用花冤枉钱去承担常常故障的风险.\n第二点, 考量日夜不同场景下的安全需求, 把闭路电视和自动门连线配合.\n这样不仅白天出入清楚掌握, 晚上回家时也能有足够的照明与监控防范.\n系统配置得当, 才能真正兼顾美观与实用性.\n第三点, 重点了解供应商有没有提供稳定的售后技术支援与定期检查服务.\n产品安装只是第一步, 之后的维修和保养才是长期安心的关键.\n选择经验丰富的团队来处理, 才能省去日后找不到人维修的烦恼.\n以前很多屋主为了省一时的安装费随便找人处理, 结果系统坏了找不到人支援, 每天出入提心吊胆.\n现在只要找对专业的安防团队协助规划, 就能让住家出入更有保障, 日常生活更安心.\n点击以下链接, 联络我们客服专员了解最新产品资讯与预约 :\nWhatassp: wa.me/60127163858\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "", "bait": false, "type": "Video", "likes": 330, "comments": 0, "er": 0.66, "followers": 49989, "date": "2026-09-24", "url": "https://www.instagram.com/p/Ddq1hCHDTEm/", "video": true, "ratio": 0, "score": 0.66, "status": "未处理", "x": 7.8}, {"id": "DeS9fxvkQTd", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "solarvestgroup", "caption": "Taking care of yourself includes taking care of your mind.\n\nAt Solarvest, we believe mental wellbeing matters, at work and beyond.\nAmid everyday responsibilities, remember to be kind to yourself, take breaks and make time for rest. Give yourself space to acknowledge how you feel and seek support when you need it.\n\nSwipe through for reminders on recognising changes in your wellbeing and taking small steps to care for yourself.\n\nYou matter. Your mental wellbeing matters.\n\n#Solarvest #EnergisingTheNext #MentalWellbeing #MentalHealthDay", "transcript": "", "brk": "Hook类型: 身份共鸣\n结构: 关注心理健康 → 提供自我关怀建议 → 强调个人价值\n为什么火: 顺应节日热点，传递企业人文关怀，拉近与受众的情感距离\n改编角度: 结合安防与太阳能行业，探讨如何通过智能安防与绿色能源为家庭创造安心无压力的生活环境", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n\n🤔切记 !在安装 CCTV & Auto Gate 时, 除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 : 👉🏻售后服务 👈🏻\n\n找我们安装时, 您不需要担心找不到人处理问题.\n🤩提供最新产品的资讯给您了解.\n🤩安排经验丰富的专业团队进行安装.\n🤩提供最快的售后服务来处理状况.\n\n🎊 INNO 成立于 2003年 拥有10组经验丰富的专业团队.\n以前找别的师傅安装系统, 常常遇到坏了找不到人或者推卸责任.\n现在交给我们处理, 从前期规划到后期维护都有专人负责.\n\n点击下方链接, 联络我们客服专员了解更多详情 :\nWhatassp: wa.me/60127163858\n\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "Solarvest, EnergisingTheNext, MentalWellbeing, MentalHealthDay", "bait": false, "type": "Carousel", "likes": 36, "comments": 0, "er": 0.65, "followers": 5556, "date": "2026-10-10", "url": "https://www.instagram.com/p/DeS9fxvkQTd/", "video": false, "ratio": 0, "score": 0.65, "status": "未处理", "x": 0.6}, {"id": "DeN74Y4GORb", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "solarvestgroup", "caption": "Triple award recognition for Solarvest in the Energy sector 🏆\n\nOur Managing Director, Mr Lim Chin Siu and Executive Director and Group CEO, Dato’ Davis Chong, represented Solarvest at The Edge Malaysia Billion Ringgit Club (BRC) Awards 2026, where we were recognised across all three performance categories in the Energy sector:\n\n🏆 Highest Return on Equity Over Three Years \n🏆 Highest Growth in Profit After Tax Over Three Years \n🏆 Highest Returns to Shareholders Over Three Years\n\nWe shared this achievement with our team, customers, partners and shareholders, whose dedication and support continue to drive Solarvest’s progress.\n\nThank you @theedgemalaysia for the recognition.\n\n#Solarvest #EnergisingTheNext #BRCAwards2026 #TheEdgeMalaysia", "transcript": "", "brk": "Hook类型: 数字承诺\n结构: 获奖喜讯 → 高管代表 → 感谢致辞\n为什么火: 权威背书展示企业实力与行业地位，增强客户信任。\n改编角度: 结合CCTV或Solar PV安装量，用行业大奖或里程碑数据建立专业信任。", "my": "🎉 免费评估安装太阳能系统 !!\n商店和工厂装太阳能 3 到 4 年回本\n🤔 切记 !在安装太阳能系统时\n除了需考虑产品的功能与价格\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 :\n👉🏻 售后服务 👈🏻\n😭 当产品发生故障时, 会不会来维修 ?\n😤 需要三催四请, 过了几天才姗姗来迟 ?\n很多商店老板以为\n随便找一家便宜的安装就好\n只要能发电省电费就行\n其实不是这样的\n真正关键的是后续的长期维护\n如果设备出问题找不到人\n省下来的电费都不够修理费\n我们来看看 3 个关键方法\n第一\n找有经验的专业团队评估\n居銮首家太阳能公司\n经验丰富值得信赖\n为您量身打造最适合的太阳能方案\n第二\n了解清楚回本周期\n商店和工厂大概 3 到 4 年回本\n住家大概 5 到 6 年回本\n视电费和屋顶条件而定\n之后每度电几乎免费\n第三\n善用政府政策与金融支持\n银行提供贷款支持\n无需一次过大笔支出\n屋顶不只是遮雨还能帮您省电\n以前商店老板装太阳能\n担心找不到可靠的团队\n担心设备坏了没人理\n现在找经验丰富的团队\n从评估到安装都有专业人员跟进\nINNO 成立于 2003 年\n拥有 10 组经验丰富的专业团队\n为您提供最新产品的资讯\n最专业的安装与最快的售后服务\n点击下方链接\n联络我们客服专员了解配套或预约\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "Solarvest, EnergisingTheNext, BRCAwards2026, TheEdgeMalaysia", "bait": false, "type": "Carousel", "likes": 36, "comments": 0, "er": 0.65, "followers": 5556, "date": "2026-10-08", "url": "https://www.instagram.com/p/DeN74Y4GORb/", "video": false, "ratio": 0, "score": 0.65, "status": "未处理", "x": 0.6}, {"id": "Dd3ZruEk0TR", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "solarvestgroup", "caption": "A proud milestone for Solarvest. 🏆\n\nWe are honoured to have achieved a clean sweep in the energy categort at The Edge Billion Ringgit Club Awards 2026, receiving recognition across all three performance categories:\n\n🏆 Highest Return on Equity Over Three Years \n🏆 Highest Growth in Profit After Tax Over Three Years \n🏆 Highest Returns to Shareholders Over Three Years\n\nThis recognition reflects the progress we have made as we continue to grow Solarvest beyond solar into a comprehensive clean energy solutions provider, while creating sustainable value for our shareholders, customers and stakeholders.\n\nOur sincere appreciation goes to our people, partners, customers and stakeholders who have been part of this journey. Your trust and support continue to drive us forward.\n\nThank you @theedgemalaysia for this recognition, and congratulations to all fellow award recipients.\n\nAs Malaysia’s energy landscape evolves, we remain committed to delivering stronger, smarter and more sustainable energy so", "transcript": "", "brk": "Hook类型: 数字承诺\n结构: 获奖喜讯 → 三大成就 → 感谢与未来展望\n为什么火: 权威背书彰显行业绝对龙头地位，建立极高品牌信任感\n改编角度: 盘点公司获得的行业大奖或大客户背书，强化品牌实力与专业度", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n🤩高价回收您的旧系统...\n欢迎观看最新产品资讯 : https://innotechcctv.com/product/\n点击以下链接, 联络我们客服专员 :\nWhatassp: wa.me/60127163858\n\n🤔切记 !\n在安装 CCTV & Auto Gate 时, 除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 :\n👉🏻售后服务 👈🏻\n\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n\n🎊 INNO 成立于 2003年 \n拥有10组经验丰富的专业团队.\n为您提供 :\n🤩最新产品的资讯\n🤩最专业的安裝\n🤩最快的售后服务\n\n🤝这些都是 INNO 给于您的承诺 !\n💪🏻 INNO 没有最好, 只有更好 !\n\n关于 INNO 公司资讯 :\nhttps://innotechcctv.com/inno/\nProject References :\nhttps://innotechcctv.com/cus-list/\n\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "Solarvest, TheEdgeBRC, BillionRinggitClub, CleanEnergy", "bait": false, "type": "Image", "likes": 34, "comments": 0, "er": 0.61, "followers": 5556, "date": "2026-09-29", "url": "https://www.instagram.com/p/Dd3ZruEk0TR/", "video": false, "ratio": 0, "score": 0.61, "status": "未处理", "x": 0.6}, {"id": "Deg6OS6nzJx", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "deluxmalaysia", "caption": "Every gate has a story, and this one in SK Puncak Alam 2 has stood guard for more than a decade. Now, it’s time to pass the baton to a new gate, ready to welcome students with a fresh start and smoother days ahead!\n\nAnother school, another meaningful upgrade through DELUX’s Gate to School programme.\n\nKeen to be part of the program? PM us now for more details or fill up this form https://forms.gle/zZzyH4K3qCC3XmRY8\n\n#deluxcsr #gatetoschool #csrprogram", "transcript": "School is a second home where children grow. I've been protecting this home for over a decade. Now, I'm growing old, but I hope the children here will always be protected. You've done well, old friend. All these years, you've protected generations of children. Let me take it from here. I'll carry on your mission, protecting the children and every family here. Rest easy. Your legacy of protection lives on through me. Thank you, D-Lud, for our new AutoGate. We feel much safer now. Next year everything will be safe. And", "brk": "Hook类型: 身份共鸣\n结构: 老旧设备自述 → 传承使命 → 换新升级\n为什么火: 拟人化视角赋予冰冷安防设备情感共鸣与CSR公益属性\n改编角度: 借CCTV或Autogate老旧换新讲守护传承故事，突显品牌温度与安全升级", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 ! 😘高价回收您的旧系统...\n\n许多学校和住家在旧系统故障时，以为只能随便找人修理，或者干脆任由它坏下去，觉得更换整套系统一定非常麻烦又花大钱。\n\n🤔切记 !其实不是系统不能换，而是您没有找到真正专业又靠谱的团队来为您处理。\n\n在安装 CCTV 与 Auto Gate 时，除了需考虑产品的功能与价格，( 一分钱，一分货，谁要做亏本的生意？ ) 您更需要考虑的是售后服务。\n\n第一步，检查您目前的设备状况。看看是否已经出现反应迟钝、经常卡住或者画面模糊的情况，了解实际问题出在哪里。\n\n第二步，寻找有经验的专业团队来评估。INNO 成立于 2003 年，拥有 10 组经验丰富的专业团队，为您提供最新产品的资讯、最专业的安装与最快的售后服务。\n\n第三步，选择具备长期支持的供应商。当产品发生故障时，会不会来维修？需要三催四请，过了几天才姗姗来迟？这些都是您在安装前必须先问清楚的关键细节。\n\n以前很多学校和工厂面对旧设备损坏时，总是找不到人维修，常常需要担心安全漏洞和日常进出的顺畅度。\n\n换成 INNO 的专业团队协助后，不仅有了稳定的设备保护环境，更不用担心后续找不到技术人员来跟进和处理。\n\n点击以下链接联络我们客服专员了解更多产品资讯，或者安排时间让我们到现场为您进行专业评估。\n\n已超过 3000 名用户选择了 INNO，您呢?", "tags": "deluxcsr, gatetoschool, csrprogram", "bait": false, "type": "Video", "likes": 146, "comments": 2, "er": 0.3, "followers": 49989, "date": "2026-10-15", "url": "https://www.instagram.com/p/Deg6OS6nzJx/", "video": true, "ratio": 0, "score": 0.3, "status": "未处理", "x": 3.5}, {"id": "Dey7zgXE6F0", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "deluxmalaysia", "caption": "Big house, BIG gate energy 😎\n\nThe DELUX Ultra-Fold Trackless Autogate can go up to 36ft wide, making it a perfect match for homes that need a grand entrance. Sleek, aesthetic and designed to keep your privacy intact — it’s where style meets function, with no compromise.\n\nWhat design should we feature next?", "transcript": "如果你家的门够宽其实也可以这样子装今天我们来到苏邦海域看看这位物主家的六折叠五轨电动门这样这位物主家的门比较宽所以很适合做六折叠的五轨电动门宽度从18尺到36尺都可以收到哦想要有一点隐私感可惜我没有做到可是又不想用那个门将后中这款就很熟识啦有一点Private C加一点Premium的感觉远看很简约精看又有细节也不会把整个家的感觉挡掉其实选一间不只是要看它好不好看也要看它跟你的家整体感觉大不大将这间物质的风格比较简约这个设计放进去就刚刚好如果是你你会选这种设计吗你们还想看什么设计呢欢迎底下留言Turning to have it ready for new yearDo all the before and the after", "brk": "Hook类型: 痛点直击\n结构: 场景痛点（大门超宽难装） → 产品展示（六折叠无轨电动门） → 风格契合（兼顾隐私与高级感）\n为什么火: 精准切入大宅屋主对超宽门面兼顾美观与私密性的痛点，展示极具视觉冲击力的安装效果。\n改编角度: 突出CCTV死角覆盖或太阳能电费归零等痛点，用豪宅真实案例展示Security与Solar系统的改装效果。", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n🤔切记 !在安装 CCTV & Auto Gate 时, 除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 : 👉🏻售后服务 👈🏻\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n很多屋主在找 Auto Gate 的时候, 以为只要门面好看就可以, 或者是随便找一家便宜的装了就算.\n其实选电动门不只要看款式搭配不搭配, 更重要的是日常使用的顺畅度, 以及日后发生故障时能不能找到人处理.\n我们来看几个实际在挑选安防和电动门系统时要注意的地方.\n第一, 系统的稳定性与耐用度很重要, 每天开开关关好几次, 必须确保结构扎实, 才不会常常卡住出问题.\n第二, 现场安装的专业度会影响使用寿命, 经验丰富的团队会根据您家的进出口情况来规划最合适的轨道和马达配置.\n第三, 售后支持才是长久之计, 遇到雷雨天跳闸或是遥控失灵时, 有可靠的团队在工作日 8 小时内给予回复, 才能让您用得安心.\n我们过去常常遇到一些屋主, 之前装了其他牌子的电动门或者监控系统, 结果半年不到出了问题打电话找不到人, 变成要花两倍的钱重新换过.\n换成专业的团队来规划之后, 从前期的需求沟通到安装都一步到位, 日常进出顺畅, 遇到技术问题也有专人跟进处理.\n点击以下链接, 联络我们客服专员了解最新产品资讯 :\nWhatassp: wa.me/60127163858\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "", "bait": false, "type": "Video", "likes": 94, "comments": 0, "er": 0.19, "followers": 49989, "date": "2026-10-22", "url": "https://www.instagram.com/p/Dey7zgXE6F0/", "video": true, "ratio": 0, "score": 0.19, "status": "未处理", "x": 2.2}, {"id": "DeeYP04g1aa", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "deluxmalaysia", "caption": "Big in size. Bold in style. Unforgettable by design. \n\nWhen your gate makes a statement before you even step inside, you know it’s something special. At DELUX, we believe your entrance should be anything but ordinary. We don’t follow the standard — we set our own.", "transcript": "Who brought the sauce? I got the sauce What's in the sauce? I-I-I am the sauce Okay Don't tell me you've tasted anything like this Don't tell me you've found this fire on your lips My love Hey, hey Who brought the sauce? I got the sauce What's in the sauce? I-I-I am the sauce", "brk": "Hook类型: 身份共鸣\n结构: 豪宅大门特写展示 → 节奏感音乐卡点 → 强调独特设计与奢华定位\n为什么火: 用强节奏感的BGM搭配大牌感的大门视觉冲击，精准吸引高净值审美群体。\n改编角度: 拍CCTV或Autogate安装前后的震撼对比，用卡点音乐放大安全感与高级感。", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n当您的电动门还没打开, 访客就已经对您的家留下深刻印象了吗 ?\n很多人以为, 门面只要大方就好, 随便选个款式就能撑起门面。\n🤔切记 !在安装 CCTV & Auto Gate 时, 除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 : 售后服务\n当产品发生故障时, 会不会来维修 ?\n需要三催四请, 过了几天才姗姗来迟 ?\n🎊 INNO 成立于 2003年 拥有10组经验丰富的专业团队.\n为您提供最新产品的资讯, 满足您对大门和安防的日常需求, 配合稳固的机械结构与智能系统, 让您每天进出顺畅又安心.\n为您提供最专业的安裝, 经验丰富的师傅现场勘察与精准施工, 确保轨道平稳、电眼灵敏, 避免日后出现卡顿或异响的问题.\n为您提供最快的售后服务, 工作日 8 小时内回复客户的各种咨询与支援, 遇到紧急状况时能快速安排技术人员跟进处理.\n🤝这些都是 INNO 给于您的承诺 !\n以前很多人装了电动门, 遇到故障找不到人修理, 只能整套换掉浪费钱。\n现在只要找对有经验的团队, 从前期安装到后期维护都有专人负责, 用得长久又省心。\n点击下方链接, 联络我们客服专员了解最新产品与促销详情。\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "", "bait": false, "type": "Video", "likes": 86, "comments": 0, "er": 0.17, "followers": 49989, "date": "2026-10-14", "url": "https://www.instagram.com/p/DeeYP04g1aa/", "video": true, "ratio": 0, "score": 0.17, "status": "未处理", "x": 2.0}, {"id": "DeHKNJcgcyH", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "deluxmalaysia", "caption": "Duo? We have it too. Just BIGGER 👀✨\n\nDouble the panels, double the presence. Meet DELUX UniGate In-Fold — where style meets smart design for a seamless entrance.", "transcript": "Duo? We have Duo too. Just bigger. Unigate Infold", "brk": "Hook类型: 痛点直击 / 视觉反差\n结构: 抛出同类产品痛点/竞品对比 → 展示更大更震撼的升级产品 → 给出产品名称与核心卖点\n为什么火: 利用“更大更震撼”的视觉反差抓人眼球，精准切中豪宅车主追求气场与高端的心理。\n改编角度: 拍摄超大尺寸CCTV监控覆盖范围或更震撼的太阳能电板阵列，强调大宅安防与绿色能源的一体化气场。", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n🤔切记 !在安装 CCTV & Auto Gate 时, 除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 : 👉🏻售后服务 👈🏻\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n很多店面老板以为随便找个便宜的电动门安装就好，不用管品牌和结构。\n其实不是这样的，如果电动门设计不够稳固，每天开开关关很容易下垂损坏。\n您真正需要的是结构扎实、开合顺畅的智能电动门系统。\n今天带您看 3 个挑选 Auto Gate 的重点，帮您的店铺和住家省下后续麻烦。\n第一个重点是看门的承重与开合结构，大面积的门扇需要更稳固的设计，日常使用才不会卡住。\n第二个重点是了解产品的实际功能与耐用度，选择适合自己出入频率的系统配置。\n第三个重点是找有经验的专业团队来安装，确保线路和轨道都处理好，用得才安心。\nINNO 成立于 2003年，拥有 10 组经验丰富的专业团队。\n为您提供 : 🤩最新产品的资讯，🤩最专业的安裝，🤩最快的售后服务。\n以前有些屋主随便找人装电动门，结果坏了找不到人修理，整天烦恼打不开。\n现在选择 INNO，从前期评估到专业安装都有专人跟进，让您出入更安心。\n点击以下链接，联络我们客服专员了解最新产品资讯和预约 :\nWhatassp: wa.me/60127163858\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "", "bait": false, "type": "Video", "likes": 73, "comments": 3, "er": 0.15, "followers": 49989, "date": "2026-10-05", "url": "https://www.instagram.com/p/DeHKNJcgcyH/", "video": true, "ratio": 0, "score": 0.16, "status": "未处理", "x": 1.9}, {"id": "DeUCRhjAeAH", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "deluxmalaysia", "caption": "When bigger is better, go all the way.\n\nFrom spacious driveways to grand entrances, DELUX goes up to 40ft wide — built to make a statement before you even step inside.\n\nHow wide can we go?\n40ft. And yes, we mean it.", "transcript": "", "brk": "Hook类型: 身份共鸣\n结构: 展示豪宅场景 → 给出40尺超宽极限数据 → 强化品牌气场\n为什么火: 极致尺寸击中高端用户的排场心理与稀缺性痛点\n改编角度: 强调Autogate或大门能做到40尺超宽，凸显豪宅气派与定制实力", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n🤔切记 !在安装 CCTV & Auto Gate 时,除了需考虑产品的功能与价格...\n( 一分钱,一分货.谁要做亏本的生意？)\n您更需要考虑的是 : 👉🏻售后服务 👈🏻\n😭当产品发生故障时,会不会来维修 ?\n😤需要三催四请,过了几天才姗姗来迟 ?\n很多屋主以为,大门做越宽越好,或者随便找一家便宜的装上就行.\n其实不是,大门要考虑到实用性,更要配合日常出入的安全性.\n我们来看看 3 个关键方法.\n第一,选择适合尺寸的电动门.\n根据您家里的车道宽度来规划,不用盲目追求过大的尺寸.\n这样进出更顺畅,也不会对门柱造成太大压力.\n第二,检查系统的稳定度.\n好的电动门搭配好的闭路电视监控,才能发挥真正的保护作用.\n这样每天出门上班才比较放心.\n第三,一定要了解售后服务.\n产品装好之后才是开始,要找有经验的团队随时能帮忙处理问题.\n这样才不会遇到故障时找不到人.\n以前很多人装了系统就找不到人跟进,遇到状况只能干着急.\n现在找对专业团队,不仅安装顺利,后续有任何状况也有人跟进.\n点击以下链接,联络我们客服专员了解最新产品资讯 :\nWhatassp: wa.me/60127163858\n已超过 3000 名用户选择了 INNO,您呢?", "tags": "", "bait": false, "type": "Video", "likes": 54, "comments": 0, "er": 0.11, "followers": 49989, "date": "2026-10-10", "url": "https://www.instagram.com/p/DeUCRhjAeAH/", "video": true, "ratio": 0, "score": 0.11, "status": "未处理", "x": 1.3}, {"id": "DeEldr3jUpX", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "deluxmalaysia", "caption": "Italian-inspired elegance starts at the gate✨\n\nDesigned by CY Construction & Interior Design Sdn Bhd, this contemporary home in Kedah brings together clean lines, refined details and a sophisticated modern aesthetic. Completing the facade is the DELUX Trackless Autogate in X8, seamlessly designed to complement the home’s architectural character.\n\nA refined entrance that sets the tone for everything beyond it.", "transcript": "", "brk": "Hook类型: 身份共鸣\n结构: 痛点引入 → 设计展示 → 品牌植入\n为什么火: 满足高端住宅业主对建筑美学与智能安防完美结合的心理需求\n改编角度: 结合意式轻奢住宅与DELUX无轨自动门或CCTV，突出高端门面与安全兼顾的审美价值", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n高价回收您的旧系统。\n欢迎观看最新产品资讯。\n点击以下链接，联络我们客服专员。\n\n🤔切记 !\n在安装 CCTV & Auto Gate 时，除了需考虑产品的功能与价格...\n一分钱，一分货。\n谁要做亏本的生意？\n您更需要考虑的是：售后服务。\n\n😭当产品发生故障时，会不会来维修？\n😤需要三催四请，过了几天才姗姗来迟？\n\n很多屋主以为，装电动门只要挑好看的款式就行。\n以为只要外观设计高级，质量就不会有问题。\n其实不是这样的。\n外观重要，但日常的安全防护和耐用度更关键。\n\n这里有三个选择系统时的重点。\n第一，先了解产品的实际功能。\n选对适合家里环境的规格，才能防盗又耐用。\n花合理的预算，买到稳定可靠的设备。\n做完这一步，日常进出更安心。\n\n第二，注意安装团队的经验。\n找有专业背景的团队来施工。\n确保线路安全和结构稳固，避免日后常出故障。\n设备装得好，使用寿命自然更长。\n\n第三，最重要是看售后服务。\n确认供应商能提供及时支援。\n遇到紧急状况时，找得到人来处理。\n有可靠的售后，使用时才没有后顾之忧。\n\n以前大家装电动门，只看外表好不好看。\n买完之后才发现，坏了找不到人修理。\n用对方法以后，不仅挑到合适的设备。\n还能享有完善的维护，省去很多烦恼。\n\n点击主页链接联络我们。\n了解最新产品资讯与最适合您的方案。\n\n已超过 3000 名用户选择了 INNO，您呢？", "tags": "", "bait": false, "type": "Carousel", "likes": 38, "comments": 2, "er": 0.08, "followers": 49989, "date": "2026-10-04", "url": "https://www.instagram.com/p/DeEldr3jUpX/", "video": false, "ratio": 0, "score": 0.09, "status": "未处理", "x": 1.1}, {"id": "Deje_vnCEvg", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "deluxmalaysia", "caption": "A little detail that makes kitchen life easier ✨\n\nNeed some fresh air while cooking? DELUX’s small sliding panel lets air flow through while keeping your home secure — with a smooth slide that makes all the difference.\n\nSometimes, it’s the little things that just make sense.", "transcript": "Let's take this from basic to premium. No shortcut, just clean work. Build clean, just right. Use one hand, that's it. Small detail, it's different.", "brk": "Hook类型: 痛点直击\n结构: 痛点引入 → 细节展示 → 升级体验\n为什么火: 切中居家生活真实痛点，用精致细节提升产品高级感\n改编角度: 展示CCTV或Autogate的高级细节，突出智能联动带来的便捷生活", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n\n🤔切记 !在安装 CCTV & Auto Gate 时, 除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 : 👉🏻售后服务 👈🏻\n\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n\n有些店面老板总以为, 随便找个便宜的安防系统装上就好。\n觉得只要能开门, 或者是能看到画面就足够了。\n\n其实真正影响日常营运的, 是系统稳定度与后续的支援。\n设备用久了出现小状况, 如果找不到人处理就会很麻烦。\n\n我们来看 3 个挑选安防系统时必须注意的方法。\n第一, 了解最新的产品资讯。\n看看市面上最新的智能安防和闭路电视技术。\n选择适合自己店铺或工厂规格的设备。\n这样才能真正符合日常的使用需求。\n\n第二, 找经验丰富的专业安装团队。\n施工过程必须干净利落, 走线要整齐。\n专业的安装可以降低日后发生故障的机率。\n设备才能用得更久更安心。\n\n第三, 确认是否有可靠的售后服务。\n当系统发生状况时, 需要有人能快速回复。\n好的售后服务能帮您省下很多宝贵的时间。\n让您的生意不会因为设备问题而受到影响。\n\n以前很多店铺老板贪图方便, 随便找人安装。\n等到系统坏了找不到人维修, 才来烦恼。\n现在您可以选择有信誉的团队来协助规划。\n让整个安防系统发挥最好的保护作用。\n\n🎊 INNO 成立于 2003年 拥有10组经验丰富的专业团队.\n为您提供 :\n🤩最新产品的资讯\n🤩最专业的安裝\n🤩最快的售后服务\n🤝这些都是 INNO 给于您的承诺 !\n\n关于 INNO 公司资讯 :\nhttps://innotechcctv.com/inno/\nProject References :\nhttps://innotechcctv.com/cus-list/\n\n点击以下链接, 联络我们客服专员了解更多详情 :\nWhatassp: wa.me/60127163858\n\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "", "bait": false, "type": "Video", "likes": 40, "comments": 0, "er": 0.08, "followers": 49989, "date": "2026-10-16", "url": "https://www.instagram.com/p/Deje_vnCEvg/", "video": true, "ratio": 0, "score": 0.08, "status": "未处理", "x": 0.9}, {"id": "Deb3gvuDtFS", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "deluxmalaysia", "caption": "Ever wondered what a contractor chooses for his own home? 👀\n\nCome along for a quick tour of his little home, featuring DELUX AlutechDoor along the way.\n\nA glimpse into his space, his choices, and what makes a house feel like home.", "transcript": "歡迎來到我的家我是很JIMS這呢是我的小小的幸福家是屬於一位金蛇風在外面工作的壓力會很多所以我回來家的時候我要輕鬆的回到家花散散給我們的門是普通的Brightwood的門所以我們覺得是沒有安全感我就想到你啦為發療將複雜看了很高級不用敲牆不用敲地的不用抓到無尾無徒了我天天是望住這個我的掃抽場球啦我們有去到每一個地方都會買覺得美的我就擺下去這個是我們的吃飯廳這個是我乾廚房通常我早上來講的是會在這裡做咖啡啊後來我做了一個湯門做東西的時候它的油煙會飛到前面來這個來講的是我出廚房我台大人講的他比較喜歡煮什麼的我實講最喜歡的是跟我一起擁有這個家那個女主人", "brk": "Hook类型: 身份共鸣\n结构: 承包商自建房参观 → 痛点与选品对比 → 情感与生活展示\n为什么火: 利用行业内部人士的真实选择建立信任，结合高级感与实用性打动屋主。\n改编角度: 拍老板或资深工程师自己的家，重点展示如何用自家CCTV、Autogate与智能门禁打造安全又高级的避风港。", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n🤔切记 !在安装 CCTV & Auto Gate 时, 除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 : 👉🏻售后服务 👈🏻\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n很多商店老板和住家屋主, 常常以为随便找个便宜的安防系统就能搞定。\n其实不是这样的, 真正关键的是后面的技术支持和团队有没有经验。\n我们来看看 3 个关键的方法。\n第一个方法是先看产品的功能与稳定性。\n选择适合自己住宅或店铺的系统。\n这样才能满足日常的保安需求。\n第二个方法是了解安装团队的背景。\nINNO 成立于 2003 年, 拥有 10 组经验丰富的专业团队。\n专业的安装能减少很多后续的麻烦。\n第三个方法是看公司的售后服务记录。\n当发生故障时能不能快速找到人。\n👉🏻售后服务 👈🏻才是最让人安心的地方。\n以前很多屋主自己随便买系统, 坏了找不到人维修, 只能重新换掉。\n现在选择 INNO, 不用担心找不到技术人员。\n点击以下链接, 联络我们客服专员了解最新产品资讯 :\nWhatassp: wa.me/60127163858\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "", "bait": false, "type": "Video", "likes": 38, "comments": 0, "er": 0.08, "followers": 49989, "date": "2026-10-13", "url": "https://www.instagram.com/p/Deb3gvuDtFS/", "video": true, "ratio": 0, "score": 0.08, "status": "未处理", "x": 0.9}, {"id": "Ddyj7XgDeBL", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "deluxmalaysia", "caption": "Behind every school gate lies a world of dreams, hopes and possibilities waiting to unfold.\n\nAnd with SJKC Ton Fah, that’s another school we’ve had the privilege of supporting through our DELUX Gate to School Programme. One more school fulfilled, one more space made better for the young minds growing within it. \n\nOne more school. One more step towards brighter futures.\n\nKeen to be part of the program? PM us now for more details or fill up this form https://forms.gle/zZzyH4K3qCC3XmRY8\n\n#deluxcsr #gatetoschool #csrprogram", "transcript": "每個學校是一個宿舍帶著小夢到未來Deluxe 對教育的支持和貢獻謝謝Deluxe謝謝Deluxe謝謝DeluxeDeluxe in To school無話無講", "brk": "Hook类型: 身份共鸣\n结构: 展示学校大门 → 表达教育支持 → 呼吁参与公益\n为什么火: 结合CSR企业社会责任建立品牌信任度，传递正能量。\n改编角度: 突出智能Autogate或CCTV守护校园安全，展现科技企业的社会责任感。", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n\n商店或工厂刚交钥匙，您是不是打算随便找一家便宜的电动门和闭路电视装上就好 ?\n\n🤔切记 ! 在安装 CCTV & Auto Gate 时，除了需考虑产品的功能与价格...\n( 一分钱，一分货。谁要做亏本的生意？)\n您更需要考虑的是 :\n👉🏻售后服务 👈🏻\n\n😭当产品发生故障时，会不会来维修 ?\n😤需要三催四请，过了几天才姗姗来迟 ?\n\n第一步，看产品的质量与品牌。\n选择耐用的系统才能保障日常营运。\n设备稳定才能避免一直坏。\n花钱买的是长期的安心。\n\n第二步，看团队的经验与专业。\n找成立多年的公司更有保障。\n专业团队施工才能确保电线和轨道安全。\n做完之后不用担心找不到人。\n\n第三步，看长期的售后支持。\n工作日 8 小时内回复客户。\n有问题时能快速安排技术人员上门。\n选择可靠的供应商才能用得长久。\n\n以前找外面随便安装的系统，坏了找不到人修理，整天担心店铺安全。\n现在找有经验的团队，设备稳定，售后有保障，做生意更加安心。\n\n点击以下链接，联络我们客服专员了解最新产品资讯 :\nWhatassp: wa.me/60127163858\n\n已超过 3000 名用户选择了 INNO，您呢?", "tags": "deluxcsr, gatetoschool, csrprogram", "bait": false, "type": "Video", "likes": 35, "comments": 0, "er": 0.07, "followers": 49989, "date": "2026-09-27", "url": "https://www.instagram.com/p/Ddyj7XgDeBL/", "video": true, "ratio": 0, "score": 0.07, "status": "未处理", "x": 0.8}, {"id": "Deoog1lDRCG", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "deluxmalaysia", "caption": "A striking entrance doesn’t need to be overdone. The DELUX Inline 14 trackless autogate brings clean lines and modern sophistication to Éigmatique, a project by CY Construction & Interior Design Sdn Bhd in Sungai Petani, Kedah.\n\nThoughtfully designed to complement the home's overall architecture, it’s a reminder that the right gate can make all the difference to your first impression.\n\nLooking to elevate your home's entrance? Discover the DELUX difference.", "transcript": "", "brk": "Hook类型: 展示成果\n结构: 痛点引入 → 产品特性 → 完工展示\n为什么火: 视觉高级感与现代极简设计完美契合，精准吸引注重住宅外观的房主。\n改编角度: 突出无轨自动门的美观与安全性，展示CCTV与门禁系统如何提升整体豪宅档次。", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 ! 😘高价回收您的旧系统...\n\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n很多屋主以为装电动门只是挑外观好看的就行, 只要价钱便宜, 随便找一家来装就可以.\n\n🤔切记 !在安装 CCTV & Auto Gate 时, 除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是售后服务做得够不够专业.\n\n我们来看 3 个真正保障家里安全的做法.\n第一, 挑选系统时要看设备的稳定度. 好的智能电动门跟监控系统运作顺畅, 日常出入才安心. 为什么有用呢 ? 因为优质的硬件能减少故障率, 帮您省下后续一直修理的麻烦. 花多少钱要看您的项目需求, 装完之后出入家里更顺心.\n第二, 施工安装要找有经验的团队. 专业的师傅上门走线和调试都很仔细. 为什么有用呢 ? 因为规范的安装能避开很多隐患, 让设备寿命更长久. 花多少钱要看现场环境和设备配置, 装完之后整个门面看起来现代化又俐落.\n第三, 确认对方有提供长期的售后技术支援. 设备用久了难免需要调整. 为什么有用呢 ? 因为当产品发生故障时, 您才找得到人来处理, 不用担心变成孤儿机. 花多少钱要看具体的维护项目, 处理好后用得更放心.\n\n以前很多屋主随便找外面便宜的来装, 结果遇到问题打了几通电话都没人上门维修, 卡在半路进退两难.\n换成有 2003 年成立经验的 INNO 团队之后, 从前期的产品资讯、专业安装到后期的快速支援都有专人跟进, 每天回家看到整洁的门口和稳定的系统, 感觉完全不一样.\n\n点击以下链接, 联络我们客服专员了解最新产品资讯 :\nWhatassp: wa.me/60127163858\n\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "", "bait": false, "type": "Carousel", "likes": 37, "comments": 0, "er": 0.07, "followers": 49989, "date": "2026-10-18", "url": "https://www.instagram.com/p/Deoog1lDRCG/", "video": false, "ratio": 0, "score": 0.07, "status": "未处理", "x": 0.8}, {"id": "De_zxUtDepK", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "deluxmalaysia", "caption": "It’s time to FLEX again ✨Meet the DELUX AlutechDoor Flex — where seamless upgrading meets refined design.\n\nGive your entrance a fresh, sophisticated look without hacking your walls or going through major renovation. With customisable door sizes, you can achieve a seamless fit that suits your home and your style.\n\nLess hassle, more elegance. Because a home upgrade should feel effortless.", "transcript": "Wait! No wall hacking! Upgrade your door, not your walls. Meet Alutek DoorFlex, a seamless door upgrade without the hassle of hacking your existing doorframe. Let's flex. A smarter fit, a cleaner upgrade? Ready to elevate your home? DM us today to discover Alutek DoorFlex. Thanks for watching!", "brk": "Hook类型: 痛点直击+省时省力\n结构: 叫停旧方法(免砸墙) → 展示新产品优势 → 引导私信留资\n为什么火: 击中 homeowners 想升级门又怕装修麻烦、搞破坏的痛点\n改编角度: 强调Autogate或CCTV免破坏布线/快速安装，主打无痛升级家居安防", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 !\n🤔切记 !在安装 CCTV & Auto Gate 时, 除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 : 👉🏻售后服务 👈🏻\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n每次想提升家里和店铺的安全, 以为一定要大费周章敲敲打打吗 ?\n其实不是这样的, 真正关键的是找到经验丰富的专业团队来规划与安装系统.\n现在就来看看如何更省心, 3 个重点让您避开安防系统的麻烦.\n第一步, 先了解最新产品的资讯.\n跟我们的客服专员聊一聊您的实际需求.\n看看哪些智能设备最适合您的住宅或商业店铺.\n第二步, 交给专业的团队来处理安装.\nINNO 成立于 2003 年, 拥有 10 组经验丰富的专业团队.\n从前期规划到现场安装都为您妥善处理.\n第三步, 重视长期的售后服务与支持.\n当设备需要维修或技术协助时, 有专人快速回复与跟进.\n不用担心找不到人帮忙处理后续的问题.\n以前找人装安防系统, 装好之后常常找不到人维修, 遇到故障只能干着急.\n现在通过专业的评估与安装, 让您的住宅和商店安全更有保障, 日常营运更顺心.\n点击以下链接, 联络我们客服专员了解最新产品资讯 :\nWhatassp: wa.me/60127163858\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "", "bait": false, "type": "Video", "likes": 31, "comments": 0, "er": 0.06, "followers": 49989, "date": "2026-10-27", "url": "https://www.instagram.com/p/De_zxUtDepK/", "video": true, "ratio": 0, "score": 0.06, "status": "未处理", "x": 0.7}, {"id": "Dd6SQupgZHP", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "deluxmalaysia", "caption": "Celebrating Mid-Autumn together 🌕❤️\n\nDELUX was happy to collaborate with @shizuoka.artschool.my for their Mid-Autumn Family Event over the weekend, held at DELUX Ballroom.\n\nIt was a lovely day filled with family fun — from kids’ colouring and drawing competitions to parent-child activities, an art exhibition, health activities and food stalls.\n\nWe’re glad to sponsor the venue and be part of a day that brought families together to create, celebrate and make happy memories ✨", "transcript": "", "brk": "Hook类型: 身份共鸣\n结构: 活动回顾 → 赞助场地/展示空间 → 传递企业温度\n为什么火: 通过异业合作与社区活动曝光，提升品牌好感度与本地信任度。\n改编角度: 结合安防或太阳能展厅空间，展示举办客户答谢会或家庭开放日的温馨场景。", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 ! 😘高价回收您的旧系统...\n\n🤔切记 !在安装 CCTV & Auto Gate 时, 除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 :\n👉🏻售后服务 👈🏻\n\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n\n🎊 INNO 成立于 2003年 拥有10组经验丰富的专业团队.\n为您提供 :\n🤩最新产品的资讯\n🤩最专业的安裝\n🤩最快的售后服务\n\n🤝这些都是 INNO 给于您的承诺 !\n💪🏻 INNO 没有最好, 只有更好 !\n\n关于 INNO 公司资讯 :\nhttps://innotechcctv.com/inno/\nProject References :\nhttps://innotechcctv.com/cus-list/\n\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "", "bait": false, "type": "Carousel", "likes": 32, "comments": 0, "er": 0.06, "followers": 49989, "date": "2026-09-30", "url": "https://www.instagram.com/p/Dd6SQupgZHP/", "video": false, "ratio": 0, "score": 0.06, "status": "未处理", "x": 0.7}, {"id": "DemD1OPgY0a", "tracker": "Innotech Security Sdn Bhd 竞对", "competitor": "deluxmalaysia", "caption": "No sweat, just a smarter upgrade! 🔒 More security, more peace of mind with DELUX autogates.\n\nReady to upgrade your gate? Make the switch to DELUX and give your home the upgrade it deserves!", "transcript": "Hey, hey, hey, teach me how to tell you, hey They be like smooth, what? Can you teach me how to tell you?", "brk": "Hook类型: 热门音乐切入与视觉反差\n结构: 痛点引入 → 产品升级展示 → 成果转化\n为什么火: 结合当下热门BGM快速抓耳，直击车主回家不便的痛点\n改编角度: 拍下下雨天狼狈手推大门痛点，秒切DELUX自动门顺畅开启，突出省时省心", "my": "🎉安装 or 更换 CCTV + Auto Gate 大促销 ! 😘高价回收您的旧系统...\n\n🤔切记 !在安装 CCTV & Auto Gate 时, 除了需考虑产品的功能与价格...\n( 一分钱, 一分货. 谁要做亏本的生意？)\n您更需要考虑的是 :\n👉🏻售后服务 👈🏻\n\n😭当产品发生故障时, 会不会来维修 ?\n😤需要三催四请, 过了几天才姗姗来迟 ?\n\n🎊 INNO 成立于 2003年 拥有10组经验丰富的专业团队.\n为您提供 :\n🤩最新产品的资讯\n🤩最专业的安裝\n🤩最快的售后服务\n\n🤝这些都是 INNO 给于您的承诺 !\n💪🏻 INNO 没有最好, 只有更好 !\n\n欢迎观看最新产品资讯 : https://innotechcctv.com/product/\n点击以下链接, 联络我们客服专员了解详情 :\nWhatassp: wa.me/60127163858\n\n已超过 3000 名用户选择了 INNO, 您呢?", "tags": "", "bait": false, "type": "Video", "likes": 28, "comments": 0, "er": 0.06, "followers": 49989, "date": "2026-10-17", "url": "https://www.instagram.com/p/DemD1OPgY0a/", "video": true, "ratio": 0, "score": 0.06, "status": "未处理", "x": 0.7}]</script>
+<script>
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const SUPA = 'https://kqmpfgvvxnlnjukccryt.supabase.co';
+const ANON = 'sb_publishable_Xh-3Hnv3kI0EYj30OKcgHA_1VQ0F4JL';
+const STATUSES = ["未处理", "拍摄中", "已处理", "跳过"];
+document.getElementById('updated').textContent = '更新于 2026-11-13 11:27 (GMT+8)';
+const PAGE = 48;
+let shown = PAGE;
+let videoOnly = false;
+let curTab = '全部';
+
+const $ = id => document.getElementById(id);
+const fmt = n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'K' : String(n);
+const getKey = () => ANON;  // anon key is baked in — safe, can only change status
+const I = n => '<svg class="ic"><use href="#i-' + n + '"/></svg>';
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const byRec = {}; DATA.forEach(d => byRec[d.id] = d);
+const TRENDS = [];
+DATA.forEach(d => {
+  d.days = d.date ? Math.max(0, Math.floor((Date.now() - new Date(d.date + 'T00:00:00')) / 864e5)) : null;
+  d.horse = d.followers > 0 && d.followers < 50000 && ((d.x || 0) >= 2 || d.score >= 10);
+});
+const PRESETS = [
+  { k: 'px', icon: 'trend', label: '真爆款 ×2+', f: d => (d.x || 0) >= 2 },
+  { k: 'pn', icon: 'star', label: '近7天', f: d => d.days !== null && d.days <= 7 },
+  { k: 'ph', icon: 'zap', label: '黑马', f: d => d.horse },
+  { k: 'pb', icon: 'magnet', label: '引流帖', f: d => d.bait },
+];
+const presetOn = {};
+
+function toast(msg, ok) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  t.style.borderColor = ok ? 'var(--green)' : 'var(--red)';
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// filters
+const comps = [...new Set(DATA.map(d => d.competitor))].sort();
+comps.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = '@'+c; $('fComp').appendChild(o); });
+[...new Set(DATA.map(d => d.tracker))].forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; $('fTracker').appendChild(o); });
+
+function matchQ(d) {
+  const q = ($('fSearch').value || '').trim().toLowerCase();
+  return !q || (d.caption + ' ' + (d.tags || '') + ' ' + (d.transcript || '') + ' ' + (d.brk || '') + ' ' + d.competitor).toLowerCase().includes(q);
+}
+
+function basePool() {
+  const t = $('fTracker').value, c = $('fComp').value;
+  return DATA.filter(d => (!t || d.tracker === t) && (!c || d.competitor === c) && (!videoOnly || d.video)
+    && matchQ(d) && PRESETS.every(p => !presetOn[p.k] || p.f(d)));
+}
+
+function filtered() {
+  const s = $('fSort').value;
+  let arr = basePool().filter(d => curTab === '全部' || d.status === curTab);
+  const key = { score:'score', er:'er', comments:'comments', likes:'likes', x:'x' }[s];
+  if (s === 'date') arr.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  else arr.sort((a,b) => (b[key]||0) - (a[key]||0));
+  return arr;
+}
+
+let dragRec = null;
+
+function renderTabs() {
+  const pool = basePool();
+  const counts = { '全部': pool.length };
+  STATUSES.forEach(s => counts[s] = pool.filter(d => d.status === s).length);
+  $('tabs').innerHTML = '';
+  ['全部', ...STATUSES].forEach(name => {
+    const el = document.createElement('div');
+    el.className = 'tab' + (curTab === name ? ' on' : '') + (name !== '全部' ? ' droppable' : '');
+    el.innerHTML = esc(name) + ' <span class="cnt">' + counts[name] + '</span>';
+    el.onclick = () => { curTab = name; shown = PAGE; render(); };
+    if (name !== '全部') {
+      el.ondragover = e => { if (dragRec) { e.preventDefault(); el.classList.add('over'); } };
+      el.ondragleave = () => el.classList.remove('over');
+      el.ondrop = e => {
+        e.preventDefault(); el.classList.remove('over');
+        const d = byRec[dragRec]; dragRec = null;
+        if (d && d.status !== name) setStatus(d, name);
+      };
+    }
+    $('tabs').appendChild(el);
+  });
+}
+
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const el = e.target, pid = el.dataset.pid;
+      if (!el.querySelector('iframe')) {
+        const f = document.createElement('iframe');
+        f.src = 'https://www.instagram.com/p/' + pid + '/embed/';
+        f.loading = 'lazy'; f.allow = 'autoplay; encrypted-media';
+        el.appendChild(f);
+      }
+      io.unobserve(el);
+    }
+  });
+}, { rootMargin: '400px' });
+
+async function setStatus(d, val) {
+  try {
+    const r = await fetch(SUPA + '/rest/v1/posts?post_id=eq.' + encodeURIComponent(d.id), {
+      method: 'PATCH',
+      headers: { 'apikey': ANON, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ status: val })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    d.status = val;
+    cacheStatus(d.id, val);
+    toast('✓ @' + d.competitor + ' 已移到「' + val + '」', true);
+  } catch (e) {
+    toast('更新失败: ' + e.message + (String(e.message).includes('401') || String(e.message).includes('403') ? ' — 密钥无效?' : ''), false);
+  }
+  render();
+}
+
+function card(d, idx) {
+  const el = document.createElement('div');
+  el.className = 'card' + ((d.x || 0) >= 2 ? ' outlier' : '');
+  el.style.animationDelay = Math.min(idx % PAGE, 14) * 30 + 'ms';
+  el.draggable = true;
+  el.ondragstart = e => {
+    dragRec = d.id;
+    e.dataTransfer.effectAllowed = 'move';
+    el.classList.add('lifting');
+    document.body.classList.add('dragging');
+  };
+  el.ondragend = () => {
+    el.classList.remove('lifting');
+    document.body.classList.remove('dragging');
+    dragRec = null;
+  };
+  const typeIcon = d.video ? 'video' : (d.type === 'Carousel' ? 'layers' : 'image');
+  const days = d.days, horse = d.horse;
+  const ago = days === null ? '' : (days === 0 ? '今天' : days + '天前');
+  const lines = (d.caption || '').split('\n').map(l => l.trim()).filter(Boolean);
+  const hook = lines[0] || '';
+  const tr = (d.transcript && d.transcript !== '(转录失败)' && d.transcript !== '(无口播内容)') ? d.transcript : '';
+  el.innerHTML = `
+    <div class="embed" data-pid="${d.id}"><div class="ph"><svg class="ic"><use href="#i-${typeIcon}"/></svg></div></div>
+    <div class="meta">
+      <div class="row1">
+        <span class="handle" title="拖到上方 tab 即可归类">${I('grip')}</span>
+        <a class="who" href="https://www.instagram.com/${d.competitor}/" target="_blank">@${d.competitor}</a>
+        <span class="badge">${d.type || '-'}</span>
+        ${days !== null && days <= 7 ? '<span class="badge bnew">' + I('star') + '新帖</span>' : ''}
+        ${horse ? '<span class="badge bhorse">' + I('zap') + '黑马</span>' : ''}
+        ${d.bait ? '<span class="badge bbait" title="「留言XX」引流打法 — 评论被引流放大,漏斗设计值得学">' + I('magnet') + '引流</span>' : ''}
+        <span class="date" title="${d.date || ''}">${ago}</span>
+      </div>
+      <div class="nums">
+        <span class="num hot" title="Viral Score">${I('flame')}<b>${d.score}</b></span>
+        ${(d.x || 0) >= 2 ? '<span class="num x" title="是自家平均热度的多少倍">' + I('trend') + '<b>×' + d.x + '</b></span>' : ''}
+        <span class="num er" title="Engagement Rate">${I('pct')}<b>${d.er}%</b></span>
+        <span class="num" title="Likes">${I('heart')}<b>${d.likes > 0 ? fmt(d.likes) : '隐藏'}</b></span>
+        <span class="num" title="Comments">${I('msg')}<b>${fmt(d.comments)}</b></span>
+        <span class="num" title="Followers">${I('users')}<b>${fmt(d.followers)}</b></span>
+      </div>
+      <div class="cap" onclick="this.classList.toggle('open')"></div>
+      ${d.brk ? '<div class="ai" onclick="this.classList.toggle(&quot;open&quot;)"></div>' : ''}
+      ${d.my ? '<div class="mine" onclick="this.classList.toggle(&quot;open&quot;)"></div>' : ''}
+      <div class="srow"><label>状态</label><select class="status btn s${d.status}"></select>
+        <button class="abtn copy" title="复制完整文案">${I('copy')}文案</button>
+        ${tr ? '<button class="abtn mic" title="复制视频口播逐字稿">' + I('mic') + '口播</button>' : ''}
+        ${d.my ? '<button class="abtn minec" title="复制我的改写口播稿(可直接拍)">' + I('mic') + '我的稿</button>' : ''}
+        <button class="abtn brief" title="复制拍摄 Brief(数据+Hook+AI拆解+我的稿+口播稿+文案)">${I('clip')}Brief</button>
+        <a class="abtn" href="${d.url}" target="_blank" title="打开 Instagram 原帖">${I('ext')}</a></div>
+    </div>`;
+  const capEl = el.querySelector('.cap');
+  const restTxt = lines.slice(1).join('\n');
+  capEl.innerHTML = hook ? '<b>' + esc(hook) + '</b>' + (restTxt ? '<br>' + esc(restTxt).replace(/\n/g, '<br>') : '') : '';
+  const aiEl = el.querySelector('.ai');
+  if (aiEl) aiEl.innerHTML = '<b>💡 AI 拆解</b><br>' + esc(d.brk).split(String.fromCharCode(10)).join('<br>');
+  const myEl = el.querySelector('.mine');
+  if (myEl) myEl.innerHTML = '<b>🎬 我的版本(可直接拍)</b><br>' + esc(d.my).split(String.fromCharCode(10)).join('<br>');
+  const sel = el.querySelector('.status');
+  STATUSES.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });
+  sel.value = d.status;
+  sel.onchange = () => setStatus(d, sel.value);
+  el.querySelector('.copy').onclick = () =>
+    navigator.clipboard.writeText(d.caption || '').then(() => toast('✓ 文案已复制', true));
+  const micBtn = el.querySelector('.mic');
+  if (micBtn) micBtn.onclick = () =>
+    navigator.clipboard.writeText(tr).then(() => toast('✓ 口播稿已复制', true));
+  const mineBtn = el.querySelector('.minec');
+  if (mineBtn) mineBtn.onclick = () =>
+    navigator.clipboard.writeText(d.my).then(() => toast('✓ 我的改写稿已复制', true));
+  el.querySelector('.brief').onclick = () => {
+    const NL = String.fromCharCode(10);
+    const parts = ['🎬 爆款参考 @' + d.competitor + ((d.x || 0) >= 2 ? '(自家平均 ×' + d.x + ')' : ''),
+      '📊 🔥' + d.score + ' | ER ' + d.er + '% | ❤️ ' + (d.likes > 0 ? fmt(d.likes) : '隐藏') +
+      ' | 💬 ' + fmt(d.comments) + ' | 👥 ' + fmt(d.followers) + (ago ? ' | ' + ago : ''),
+      '🔗 ' + d.url, '✍️ Hook: ' + hook];
+    if (d.brk) parts.push('——— AI 拆解 ———', d.brk);
+    if (d.my) parts.push('——— 我的版本(可直接拍)———', d.my);
+    if (tr) parts.push('——— 竞对原口播稿 ———', tr);
+    parts.push('——— 完整文案 ———', d.caption || '');
+    navigator.clipboard.writeText(parts.join(NL)).then(() => toast('✓ Brief 已复制,可直接发给拍摄/剪辑', true));
+  };
+  io.observe(el.querySelector('.embed'));
+  return el;
+}
+
+function render() {
+  renderTabs();
+  const arr = filtered();
+  const grid = $('grid'); grid.innerHTML = '';
+  arr.slice(0, shown).forEach((d, i) => grid.appendChild(card(d, i)));
+  $('empty').style.display = arr.length ? 'none' : '';
+  $('moreWrap').style.display = arr.length > shown ? '' : 'none';
+}
+
+
+function applyStatusCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem('st_cache') || '{}');
+    Object.keys(c).forEach(rid => { const d = byRec[rid]; if (d) d.status = c[rid]; });
+  } catch (e) {}
+}
+
+function cacheStatus(rid, val) {
+  try {
+    const c = JSON.parse(localStorage.getItem('st_cache') || '{}');
+    c[rid] = val; localStorage.setItem('st_cache', JSON.stringify(c));
+  } catch (e) {}
+}
+
+// live status refresh (so weekly-baked page shows current statuses)
+async function refreshStatuses() {
+  applyStatusCache(); render();  // last-known statuses first
+  if (Date.now() - (+localStorage.getItem('st_ts') || 0) < 600000) return;  // 10-min throttle
+  localStorage.setItem('st_ts', String(Date.now()));
+  const fresh = {};
+  try {
+    const r = await fetch(SUPA + '/rest/v1/posts?select=post_id,status', { headers: { 'apikey': ANON } });
+    if (!r.ok) return;
+    (await r.json()).forEach(row => {
+      const d = byRec[row.post_id];
+      if (d) d.status = row.status || '未处理';
+      if (row.status && row.status !== '未处理') fresh[row.post_id] = row.status;
+    });
+    localStorage.setItem('st_cache', JSON.stringify(fresh));
+    render();
+  } catch (e) {}
+}
+
+['fTracker','fComp','fSort'].forEach(id => $(id).onchange = () => { shown = PAGE; render(); });
+$('fSearch').oninput = () => { shown = PAGE; render(); };
+$('fVideo').onclick = () => { videoOnly = !videoOnly; $('fVideo').classList.toggle('on', videoOnly); shown = PAGE; render(); };
+$('moreBtn').onclick = () => { shown += PAGE; render(); };
+
+// preset quick filters
+$('presets').innerHTML = '<span class="lbl">快筛</span>';
+PRESETS.forEach(p => {
+  const c = document.createElement('span'); c.className = 'chip2';
+  c.innerHTML = I(p.icon) + esc(p.label);
+  c.onclick = () => { presetOn[p.k] = !presetOn[p.k]; c.classList.toggle('on', presetOn[p.k]); shown = PAGE; render(); };
+  $('presets').appendChild(c);
+});
+
+// trending hashtags among outlier posts
+if (TRENDS.length) {
+  $('trends').innerHTML = '<span class="lbl">爆款热词</span>';
+  TRENDS.forEach(([tag, n]) => {
+    const c = document.createElement('span'); c.className = 'chip2';
+    c.textContent = '#' + tag + ' ' + n;
+    c.onclick = () => { $('fSearch').value = $('fSearch').value === tag ? '' : tag; shown = PAGE; render(); };
+    $('trends').appendChild(c);
+  });
+} else { $('trends').style.display = 'none'; }
+
+render();
+refreshStatuses();
+</script>
+</body>
+</html>
